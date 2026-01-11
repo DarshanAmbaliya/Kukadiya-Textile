@@ -1,13 +1,147 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+:root { --primary: #4f46e5; --bg: #f8fafc; --border: #e2e8f0; --present: #00be89; --absent: #eb0000; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; font-size: 12px; }
+.container { padding: 20px; }
+.app-header { display: flex;flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.header-actions { display: flex; gap: 15px; align-items: center;flex-wrap: wrap; }
+.add-emp-box { display: flex; gap: 5px; border-right: 1px solid #ddd; padding-right: 15px; }
+.add-emp-box input { border: 1px solid #ddd; padding: 5px 10px; border-radius: 4px; }
+.add-emp-btn { background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+.lock-btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+.lock-btn.locked { background: #94a3b8; }
+
+.table-wrapper { background: white; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); }
+.main-table { width: 100%; border-collapse: collapse; }
+.main-table th { text-align: center; background: #f1f5f9; padding: 10px; text-align: left; border-bottom: 2px solid var(--border); }
+.main-table td {height: 60px;  padding: 8px; border-bottom: 1px solid var(--border); }
+.sticky-col { position: sticky; left: 0; background: white; border-right: 2px solid var(--border); z-index: 10; font-weight: bold; min-width: 120px; }
+
+.rate-input { width: 60px; border: 1px solid #ddd; padding: 4px; border-radius: 4px; font-weight: bold; }
+
+.att-cell select { border: none; background: transparent; width: 100%; font-weight: bold; text-align: center; cursor: pointer; appearance: none; }
+.p-bg { background: var(--present) !important; color: white; }
+.a-bg { background: var(--absent) !important; color: white; }
+.stats-cell { text-align: center; font-weight: bold; }
+.p-text { color: var(--present); } .a-text { color: var(--absent); }
+
+.adv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 5px; }
+.adv-tag { background: #f1f5f9; padding: 2px 5px; border-radius: 4px; font-size: 10px; border: 1px solid #cbd5e1; display: flex; justify-content: space-between; align-items: center; }
+.del-adv-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 14px; padding: 0 2px; }
+.advance-input-group { display: flex; gap: 4px; margin-bottom: 5px; }
+.advance-input-group input { font-size: 11px; padding: 3px; border: 1px solid #ddd; border-radius: 3px; }
+
+.action-cell { display: flex; gap: 10px; align-items: center; }
+.print-btn { background: white; border: 1px solid var(--primary); color: var(--primary); padding: 3px 8px; border-radius: 4px; cursor: pointer; }
+.del-row-btn { background: none; border: none; cursor: pointer; font-size: 16px; }
+
+/* Slip Styling */
+.slip-div { display: flex; align-items:center; justify-content: center; }
+.slip-header h2 { font-size: 32px; margin: 5px 0; text-align: center; }
+.slip-header .slip-subheader { display: flex; align-items: center; justify-content:center; gap: 5px; padding-bottom: 15px; }
+.slip-header .slip-subheader p{ margin: 0; font-weight:700; font-size: 16px; padding-top: 10px; }
+.slip-container { padding: 20px; border: 2px solid #000; max-width: 800px;width:800px; background: white; color: black; }
+.slip-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+.slip-table td, .slip-table th { border: 1px solid #000; padding: 5px; }
+.net-pay-box {font-size:22px; border: 2px solid #000; padding: 10px; font-weight: bold; text-align: center; }
+.label { font-weight: bold; background: #f9f9f9; width: 25%; }
+.value { width: 25%; }
+.action-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.delete-row-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 5px;
+  border-radius: 4px;
+  transition: background 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
+.delete-row-btn:hover {
+  background-color: #fee2e2; /* Light red background on hover */
+  transform: scale(1.1);
+}
+
+.delete-row-btn:active {
+  transform: scale(0.9);
+}
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px; right: 15px;
+  background: none; border: none;
+  font-size: 30px; cursor: pointer; color: #666;
+}
+
+
+.action-cell {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* attendance page css start */
+.attandancerecord-section .filter-group select {
+  padding: 8px 15px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  font-weight: 600;
+  margin-left: 10px;
+}
+
+.attandancerecord-section .table-wrapper {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.attandancerecord-section .main-table th {
+  background: #f1f5f9;
+  color: #475569;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  padding: 15px;
+}
+
+.attandancerecord-section .main-table td {
+  padding: 15px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.attandancerecord-section .highlight {
+  color: #4f46e5;
+  font-weight: 800;
+  background: #f0f4ff;
+}
+/* attendance page css end */
