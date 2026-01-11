@@ -14,10 +14,12 @@ export default function AttendanceRecord() {
     "july", "august", "september", "october", "november", "december"
   ];
 
+  // --- FETCH DATA FROM BACKEND API ---
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/employees");
+        const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+        const res = await axios.get(`${API_URL}/api/employees`);
         setRecord(res.data);
         const years = Object.keys(res.data);
         if (!selectedYear && years.length > 0) setSelectedYear(years[years.length - 1]);
@@ -163,96 +165,28 @@ export default function AttendanceRecord() {
             max-width: 1200px; 
             margin: 0 auto;
         }
-        
-        /* RESPONSIVE HEADER */
-        .app-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding-bottom: 20px; 
-            border-bottom: 1px solid #ddd;
-            gap: 20px;
-            flex-wrap: wrap; /* Allows wrapping on small screens */
-        }
+        .app-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid #ddd; gap: 20px; flex-wrap: wrap; }
         .attendance-history .brand h2 { font-size: 22px; margin:0; padding: 5px 0; }
         .attendance-history .brand p { text-transform: uppercase; font-size:14px; color: #666; }
-        
-        .controls { 
-            display: flex; 
-            gap: 10px; 
-            align-items: center;
-            flex-wrap: wrap;
-        }
+        .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .select-group { display: flex; gap: 8px; }
-
-        /* TABLE RESPONSIVENESS */
-        .table-wrapper { 
-            width: 100%; 
-            overflow-x: auto; /* Standard horizontal scroll for mobile */
-            margin-top: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            -webkit-overflow-scrolling: touch;
-        }
-
+        .table-wrapper { width: 100%; overflow-x: auto; margin-top: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); -webkit-overflow-scrolling: touch; }
         .pro-table { min-width: 800px; width: 100%; border-collapse: collapse; font-size: 14px; }
         .pro-table th { text-align: center; background: #2c3e50; color: white; padding: 12px; white-space: nowrap; }
         .pro-table td { padding: 12px; border-bottom: 1px solid #eee; white-space: nowrap; }
-        
-        /* COLORS & UI */
         .text-p { color: #27ae60; font-weight: bold; }
         .text-a { color: #e74c3c; font-weight: bold; }
         .text-net { font-size: 15px; font-weight: 800; color: #2c3e50; }
         .print-report-btn { background: #34495e; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: 600; white-space: nowrap; }
         .slip-btn { background: #3498db; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
         .empty-state { padding: 40px; text-align: center; color: #888; }
-
-        /* MODAL RESPONSIVENESS */
         .modal-overlay { position: fixed; inset: 0; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:999; padding: 15px; }
-        .slip-paper { 
-            background: white; 
-            padding: 30px 20px; 
-            border-radius: 8px; 
-            position: relative; 
-            width: 100%; 
-            max-width: 600px; 
-            max-height: 90vh; 
-            display: flex; 
-            flex-direction: column; 
-        }
+        .slip-paper { background: white; padding: 30px 20px; border-radius: 8px; position: relative; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; }
         .modal-scroll-area { overflow-y: auto; padding: 10px 0; }
         .close-x { position: absolute; right: 15px; top: 10px; font-size: 28px; border: none; background: none; cursor: pointer; color: #333; z-index: 10; }
-
-        /* MOBILE OVERRIDES (Phones) */
-        @media (max-width: 600px) {
-            .attendance-history { padding: 10px; }
-            .attendance-history .brand p{
-              padding: 0;
-              margin: 0;
-            }
-            .attendance-history .container{padding: 0;}
-            .app-header { flex-direction: column; }
-            .controls { width: 100%; justify-content: center; }
-            .select-group { width: 100%; }
-            .select-group select { flex: 1; padding: 5px;}
-            .print-report-btn { padding: 10px; }
-        }
-
-        /* PRINT STYLES */
         .print-only { display: none; }
-        @media print {
-          .no-print { display: none !important; }
-          .print-only { display: block !important; }
-          .attendance-history { padding: 0; }
-          .table-wrapper { overflow: visible; }
-          .pro-table { min-width: 100%; border: 1px solid #000; }
-          .pro-table th { background: #eee !important; color: black !important; border: 1px solid #000; }
-          .pro-table td { border: 1px solid #000; }
-          .print-header { text-align: center; margin-bottom: 20px; }
-          .signature-section { display: flex !important; justify-content: space-between; margin-top: 50px; }
-          .sig-box { border-top: 1.5px solid #000; width: 40%; text-align: center; padding-top: 5px; font-weight: bold; }
-        }
+        @media print { .no-print { display: none !important; } .print-only { display: block !important; } }
+        @media (max-width: 600px) { .attendance-history { padding: 10px; } .app-header { flex-direction: column; } }
       `}</style>
     </section>
   );

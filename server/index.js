@@ -19,6 +19,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/employees', employeeRoutes);
-
+app.get('/', (req, res) => {
+  res.send('🚀 Mahakali Textiles API is running!');
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server launched on port ${PORT}`));
