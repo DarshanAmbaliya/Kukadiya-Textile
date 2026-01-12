@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import SalarySlip from "../components/SalarySlip"; 
+import SalarySlip from "../components/SalarySlip";
 
 export default function AttendanceRecord() {
   const [record, setRecord] = useState({});
@@ -14,10 +14,11 @@ export default function AttendanceRecord() {
     "july", "august", "september", "october", "november", "december"
   ];
 
+  const API_URL = `${process.env.REACT_APP_API_URL}/api/employees`;
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("https://mahakali-textiles-production.up.railway.app/api/employees");
+        const res = await axios.get(API_URL);
         setRecord(res.data);
         const years = Object.keys(res.data);
         if (!selectedYear && years.length > 0) setSelectedYear(years[years.length - 1]);
@@ -47,23 +48,23 @@ export default function AttendanceRecord() {
   return (
     <section className="attendance-history">
       <div className="container">
-        
+
         {/* --- SCREEN HEADER --- */}
         <div className="app-header no-print">
           <div className="brand">
             <h2>Mahakali Textiles</h2>
             <p>{selectedMonth || 'Select Month'} {selectedYear}</p>
           </div>
-          
+
           <div className="controls">
             <div className="select-group">
-                <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
+              <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
                 {Object.keys(record).map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
-                <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
+              </select>
+              <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
                 <option value="">Select Month</option>
                 {monthNames.map(m => <option key={m} value={m}>{m.toUpperCase()}</option>)}
-                </select>
+              </select>
             </div>
             <button onClick={handlePrint} className="print-report-btn">🖨️ <span className="btn-text">Print Report</span></button>
           </div>
@@ -125,7 +126,7 @@ export default function AttendanceRecord() {
               </tfoot>
             )}
           </table>
-          
+
           {employeeList.length === 0 && (
             <div className="empty-state">No records found for this period.</div>
           )}
@@ -141,19 +142,19 @@ export default function AttendanceRecord() {
       {/* --- SALARY SLIP MODAL --- */}
       {viewingSlip && (
         <div className="modal-overlay no-print" onClick={() => setViewingSlip(null)}>
-           <div className="modal-content slip-paper" onClick={e => e.stopPropagation()}>
-             <button className="close-x" onClick={() => setViewingSlip(null)}>&times;</button>
-             <div className="modal-scroll-area">
-                <SalarySlip 
-                    emp={viewingSlip} 
-                    month={selectedMonth.toUpperCase()} 
-                    year={selectedYear} 
-                />
-             </div>
-              <div className="modal-actions">
-                <button className="print-report-btn" onClick={() => window.print()}>Print This Slip</button>
-              </div>
-           </div>
+          <div className="modal-content slip-paper" onClick={e => e.stopPropagation()}>
+            <button className="close-x" onClick={() => setViewingSlip(null)}>&times;</button>
+            <div className="modal-scroll-area">
+              <SalarySlip
+                emp={viewingSlip}
+                month={selectedMonth.toUpperCase()}
+                year={selectedYear}
+              />
+            </div>
+            <div className="modal-actions">
+              <button className="print-report-btn" onClick={() => window.print()}>Print This Slip</button>
+            </div>
+          </div>
         </div>
       )}
 
