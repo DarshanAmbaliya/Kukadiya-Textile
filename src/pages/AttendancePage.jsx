@@ -4,13 +4,19 @@ import { getDaysInMonth, createEmployee, PRINT_STYLE } from "../utils/payrollHel
 import SalarySlip from "../components/SalarySlip";
 import AdvanceInput from "../components/AdvanceInput";
 
-const API_URL =
-  process.env.NODE_ENV === "production"
-    ? process.env.REACT_APP_API_URL
-    : "http://localhost:5000";
+/**
+ * FIXED API URL LOGIC
+ * This ensures the URL never evaluates to "undefined".
+ * If you are on Netlify, it uses the production Railway URL.
+ * If you are on your computer, it uses localhost.
+ */
+const API_BASE_URL = window.location.hostname === "localhost" 
+  ? "http://localhost:5000" 
+  : "https://mahakali-textiles-production.up.railway.app";
+
+const API_URL = `${API_BASE_URL}/api/employees`;
 
 export default function AttendancePage() {
-  // displayDate controls the Year and Month currently on screen
   const [displayDate, setDisplayDate] = useState({ year: 2026, monthName: "January", monthIdx: 0 });
   const days = getDaysInMonth(displayDate.year, displayDate.monthIdx);
 
@@ -24,23 +30,23 @@ export default function AttendancePage() {
   const monthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
   const availableYears = [2025, 2026, 2027, 2028, 2029, 2030];
 
-  // FETCH DATA: Runs whenever the year or month view is changed
+  // FETCH DATA: Uses the unified API_URL variable
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("https://mahakali-textiles-production.up.railway.app/api/employees");
+        const res = await axios.get(API_URL);
         const yearData = res.data[displayDate.year];
         const monthKey = displayDate.monthName.toLowerCase();
         
         if (yearData && yearData[monthKey]) {
           setEmployees(yearData[monthKey]);
         } else {
-          setEmployees([]); // Shows empty if the year/month hasn't been initialized
+          setEmployees([]); 
         }
-        setLoading(false);
       } catch (err) {
-        console.error("Connection Refused!", err);
+        console.error("API Connection Failed!", err);
+      } finally {
         setLoading(false);
       }
     };
@@ -54,12 +60,13 @@ export default function AttendancePage() {
         month: displayDate.monthName.toLowerCase(),
         employees: updatedList
       });
+      console.log("Sync Successful");
     } catch (err) {
       console.error("Sync failed", err);
+      alert("Changes not saved. Check server connection.");
     }
   };
 
-  // --- 1. SAFE VIEW CHANGE (Does not affect data) ---
   const handleViewChange = (field, value) => {
     if (field === "year") {
       setDisplayDate(prev => ({ ...prev, year: parseInt(value) }));
@@ -73,16 +80,16 @@ export default function AttendancePage() {
     }
   };
 
-  // --- 2. INITIALIZE NEW MONTH/YEAR (Carry names, clear data) ---
   const handleInitializeMonth = async () => {
     if (!selectedMonthForNew) return alert("Please select a month!");
 
-    const confirmMsg = `Initialize ${selectedMonthForNew.toUpperCase()} ${displayDate.year}? This carries over names but clears attendance.`;
+    const confirmMsg = `Initialize ${selectedMonthForNew.toUpperCase()} ${displayDate.year}? Names carry over, but attendance resets.`;
     if (!window.confirm(confirmMsg)) return;
 
     const newMonthIdx = monthNames.indexOf(selectedMonthForNew.toLowerCase());
     const newDays = getDaysInMonth(displayDate.year, newMonthIdx);
 
+    // Carry over names but clear monthly specifics
     const freshData = employees.map(emp => ({
       name: emp.name,
       dailySalary: emp.dailySalary,
@@ -102,7 +109,6 @@ export default function AttendancePage() {
         employees: freshData
       });
 
-      // After API success, move the view to that month
       setDisplayDate(prev => ({ 
         ...prev, 
         monthName: selectedMonthForNew.charAt(0).toUpperCase() + selectedMonthForNew.slice(1), 
@@ -110,27 +116,34 @@ export default function AttendancePage() {
       }));
       setEmployees(freshData);
       setSelectedMonthForNew("");
-      alert(`Success! ${selectedMonthForNew.toUpperCase()} ${displayDate.year} is now ready.`);
     } catch (err) {
-      alert("Error: Database could not be updated.");
+      alert("Database error: Could not initialize month.");
     }
   };
 
   const updateField = async (id, field, value) => {
     const updatedList = employees.map(emp => {
-      if (emp._id !== id && emp.id !== id) return emp;
+      const currentId = emp._id || emp.id;
+      if (currentId !== id) return emp;
+
       let updatedEmp = { ...emp, [field]: value };
+      
+      // Re-calculate totals if sensitive fields change
       if (['attendance', 'dailySalary', 'advance'].includes(field)) {
         const presentCount = updatedEmp.attendance.filter(x => x === "P").length;
         const absentCount = updatedEmp.attendance.filter(x => x === "A").length;
         updatedEmp.totalPresent = presentCount;
         updatedEmp.totalAbsent = absentCount;
         updatedEmp.totalSalary = presentCount * updatedEmp.dailySalary;
-        updatedEmp.totalAdvance = updatedEmp.advance.reduce((acc, obj) => acc + Number(Object.values(obj)[0]), 0);
+        updatedEmp.totalAdvance = updatedEmp.advance.reduce((acc, obj) => {
+           const val = Object.values(obj)[0];
+           return acc + (Number(val) || 0);
+        }, 0);
         updatedEmp.finalPay = updatedEmp.totalSalary - updatedEmp.totalAdvance;
       }
       return updatedEmp;
     });
+
     setEmployees(updatedList);
     await syncToDB(updatedList);
   };
@@ -152,6 +165,21 @@ export default function AttendancePage() {
     }
   };
 
+  const removeAdvance = async (empId, advIndex) => {
+    const updatedList = employees.map(emp => {
+      if ((emp._id || emp.id) !== empId) return emp;
+      const newAdvance = emp.advance.filter((_, idx) => idx !== advIndex);
+      return { 
+        ...emp, 
+        advance: newAdvance,
+        totalAdvance: newAdvance.reduce((acc, obj) => acc + Number(Object.values(obj)[0]), 0),
+        finalPay: emp.totalSalary - newAdvance.reduce((acc, obj) => acc + Number(Object.values(obj)[0]), 0)
+      };
+    });
+    setEmployees(updatedList);
+    await syncToDB(updatedList);
+  };
+
   const printSlip = (id) => {
     const content = document.getElementById(`slip-${id}`).innerHTML;
     const w = window.open("", "_blank");
@@ -160,7 +188,7 @@ export default function AttendancePage() {
     setTimeout(() => { w.print(); w.close(); }, 500);
   };
 
-  if (loading) return <div className="loader">Loading {displayDate.monthName} {displayDate.year}...</div>;
+  if (loading) return <div className="loader">Connecting to Database...</div>;
 
   return (
     <div className="container">
@@ -168,7 +196,6 @@ export default function AttendancePage() {
         <div className="title-area">
           <h1 style={{ margin: 0 }}>Payroll: {displayDate.monthName} {displayDate.year}</h1>
           <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-            {/* VIEW NAVIGATION (SAFE) */}
             <select value={displayDate.year} onChange={(e) => handleViewChange("year", e.target.value)}>
               {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
@@ -179,22 +206,20 @@ export default function AttendancePage() {
         </div>
 
         <div className="header-actions">
-          {/* Add Employee Form */}
           <div className="add-emp-box">
-            <input placeholder="Name" value={newEmpName} onChange={e => setNewEmpName(e.target.value)} />
-            <input type="number" style={{ width: '70px' }} value={newEmpRate} onChange={e => setNewEmpRate(e.target.value)} />
-            <button className="add-emp-btn" onClick={addNewEmployee}>+ Add</button>
+            <input placeholder="New Employee Name" value={newEmpName} onChange={e => setNewEmpName(e.target.value)} />
+            <input type="number" placeholder="Rate" style={{ width: '80px' }} value={newEmpRate} onChange={e => setNewEmpRate(e.target.value)} />
+            <button className="add-emp-btn" onClick={addNewEmployee}>+ Add Employee</button>
           </div>
 
-          {/* INITIALIZE NEW MONTH/YEAR (ACTION) */}
-          <div className="month-create-box" style={{ background: '#f0f9ff', border: '1px solid #bae6fd' }}>
-            <span style={{ fontSize: '10px', fontWeight: 'bold' }}>START NEW MONTH:</span>
+          <div className="month-create-box">
+            <span style={{ fontSize: '11px', fontWeight: 'bold' }}>INITIALIZE MONTH:</span>
             <select value={selectedMonthForNew} onChange={(e) => setSelectedMonthForNew(e.target.value)}>
-              <option value="">Month</option>
+              <option value="">Select Month</option>
               {monthNames.map(m => <option key={m} value={m}>{m.toUpperCase()}</option>)}
             </select>
             <button className="add-emp-btn" onClick={handleInitializeMonth} style={{ background: '#0284c7' }}>
-              Initialize
+              Create Data
             </button>
           </div>
         </div>
@@ -220,10 +245,20 @@ export default function AttendancePage() {
               employees.map(emp => (
                 <tr key={emp._id || emp.id}>
                   <td className="sticky-col">
-                    <input type="text" value={emp.name} onChange={e => updateField(emp._id || emp.id, 'name', e.target.value)} style={{ border: 'none', background: 'transparent', fontWeight: 'bold', width: '100%' }} />
+                    <input 
+                       type="text" 
+                       value={emp.name} 
+                       onChange={e => updateField(emp._id || emp.id, 'name', e.target.value)} 
+                       style={{ border: 'none', background: 'transparent', fontWeight: 'bold', width: '100%' }} 
+                    />
                   </td>
                   <td>
-                    <input type="number" className="rate-input" value={emp.dailySalary} onChange={e => updateField(emp._id || emp.id, 'dailySalary', Number(e.target.value))} />
+                    <input 
+                       type="number" 
+                       className="rate-input" 
+                       value={emp.dailySalary} 
+                       onChange={e => updateField(emp._id || emp.id, 'dailySalary', Number(e.target.value))} 
+                    />
                   </td>
                   {emp.attendance.map((v, i) => (
                     <td key={i} className={`att-cell ${v === "P" ? "p-bg" : v === "A" ? "a-bg" : ""}`}>
@@ -232,7 +267,9 @@ export default function AttendancePage() {
                         newAtt[i] = e.target.value;
                         updateField(emp._id || emp.id, 'attendance', newAtt);
                       }}>
-                        <option value="">-</option><option value="P">P</option><option value="A">A</option>
+                        <option value="">-</option>
+                        <option value="P">P</option>
+                        <option value="A">A</option>
                       </select>
                     </td>
                   ))}
@@ -248,7 +285,7 @@ export default function AttendancePage() {
                       {emp.advance.map((obj, idx) => (
                         <div key={idx} className="adv-tag">
                           <span>{Object.keys(obj)[0]}: ₹{Object.values(obj)[0]}</span>
-                          <button onClick={() => {/* Delete Advance logic */}}>&times;</button>
+                          <button onClick={() => removeAdvance(emp._id || emp.id, idx)}>&times;</button>
                         </div>
                       ))}
                     </div>
@@ -264,7 +301,12 @@ export default function AttendancePage() {
                 </tr>
               ))
             ) : (
-              <tr><td colSpan={days + 8} style={{ padding: '60px', textAlign: 'center' }}>No data for {displayDate.monthName} {displayDate.year}. Select month and click "Initialize" to start.</td></tr>
+              <tr>
+                <td colSpan={days + 8} style={{ padding: '60px', textAlign: 'center' }}>
+                  No data found for {displayDate.monthName} {displayDate.year}. 
+                  Select a month and click "Create Data" to begin.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
