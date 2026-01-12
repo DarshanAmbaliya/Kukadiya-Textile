@@ -13,8 +13,11 @@ export default function AttendanceRecord() {
     "january", "february", "march", "april", "may", "june",
     "july", "august", "september", "october", "november", "december"
   ];
+  const API_BASE_URL = window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://mahakali-textiles-production.up.railway.app";
 
-  const API_URL = `${process.env.REACT_APP_API_URL}/api/employees`;
+  const API_URL = `${API_BASE_URL}/api/employees`;
   useEffect(() => {
     const fetchData = async () => {
       try {

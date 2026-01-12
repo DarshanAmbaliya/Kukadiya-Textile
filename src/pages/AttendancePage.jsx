@@ -4,7 +4,17 @@ import { getDaysInMonth, createEmployee, PRINT_STYLE } from "../utils/payrollHel
 import SalarySlip from "../components/SalarySlip";
 import AdvanceInput from "../components/AdvanceInput";
 
-const API_URL = `${process.env.REACT_APP_API_URL}/api/employees`;
+/**
+ * FIXED API URL LOGIC
+ * This ensures the URL never evaluates to "undefined".
+ * If you are on Netlify, it uses the production Railway URL.
+ * If you are on your computer, it uses localhost.
+ */
+const API_BASE_URL = window.location.hostname === "localhost" 
+  ? "http://localhost:5000" 
+  : "https://mahakali-textiles-production.up.railway.app";
+
+const API_URL = `${API_BASE_URL}/api/employees`;
 
 export default function AttendancePage() {
   const [displayDate, setDisplayDate] = useState({ year: 2026, monthName: "January", monthIdx: 0 });
