@@ -188,8 +188,6 @@ export default function AttendancePage() {
     setTimeout(() => { w.print(); w.close(); }, 500);
   };
 
-  if (loading) return <div className="loader">Connecting to Database...</div>;
-
   return (
     <div className="container">
       <header className="app-header">
