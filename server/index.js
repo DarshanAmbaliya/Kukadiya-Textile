@@ -11,16 +11,30 @@ connectDB();
 
 const app = express();
 
+// ✅ CORS (FIXED)
 app.use(cors({
-  origin: ["https://mahakali-textiles.netlify.app", "http://localhost:3000"],
-  credentials: true
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      "https://mahakalitextiles.netlify.app",
+      "http://localhost:3000"
+    ];
+
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
 }));
 
 app.use(express.json());
 
+// API Routes
 app.use('/api/employees', employeeRoutes);
 
-// ✅ SIMPLE HEALTH CHECK
+// Health check
 app.get('/', (req, res) => {
   res.send('🚀 Mahakali Textiles API is running!');
 });
