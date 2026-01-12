@@ -29,7 +29,7 @@ export default function AttendancePage() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(API_URL);
+        const res = await axios.get(`${API_URL}/api/employees`);
         const yearData = res.data[displayDate.year];
         const monthKey = displayDate.monthName.toLowerCase();
         
