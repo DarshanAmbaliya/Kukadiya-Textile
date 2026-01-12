@@ -17,7 +17,7 @@ export default function AttendanceRecord() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/employees");
+        const res = await axios.get("https://mahakali-textiles-production.up.railway.app/api/employees");
         setRecord(res.data);
         const years = Object.keys(res.data);
         if (!selectedYear && years.length > 0) setSelectedYear(years[years.length - 1]);
