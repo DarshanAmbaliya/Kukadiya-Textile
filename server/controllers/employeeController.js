@@ -1,6 +1,6 @@
 const Payroll = require('../models/Employee');
 
-// GET: Fetch all data as { "2026": { "january": [], "february": [] } }
+// GET: Fetch all payroll data
 exports.getEmployees = async (req, res) => {
   try {
     const data = await Payroll.find();
@@ -17,13 +17,24 @@ exports.getEmployees = async (req, res) => {
 // POST: Save or Update a specific month's data
 exports.createEmployee = async (req, res) => {
   const { year, month, employees } = req.body; 
+
+  if (!year || !month) {
+    return res.status(400).json({ message: "Year and Month are required" });
+  }
+
   try {
-    let payroll = await Payroll.findOne({ year });
+    let payroll = await Payroll.findOne({ year: parseInt(year) });
+
     if (!payroll) {
-      payroll = new Payroll({ year, months: {} });
+      payroll = new Payroll({ year: parseInt(year), months: {} });
     }
-    // Set the specific month key (e.g. "january") with the full array
+
+    // Set the specific month (e.g., "january") in the Map
     payroll.months.set(month.toLowerCase(), employees);
+    
+    // Tell Mongoose the Map data has changed
+    payroll.markModified('months');
+
     const saved = await payroll.save();
     res.status(200).json(saved);
   } catch (err) {
@@ -31,6 +42,6 @@ exports.createEmployee = async (req, res) => {
   }
 };
 
-// Dummy exports to prevent Route errors if you kept them in employeeRoutes.js
-exports.updateEmployee = (req, res) => res.status(200).send();
-exports.deleteEmployee = (req, res) => res.status(200).send();
+// Placeholders for update/delete
+exports.updateEmployee = (req, res) => res.status(200).json({ message: "Update success" });
+exports.deleteEmployee = (req, res) => res.status(200).json({ message: "Delete success" });
