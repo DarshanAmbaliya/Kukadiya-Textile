@@ -13,8 +13,22 @@ const app = express();
 
 // ✅ CORS Configuration
 // This allows your Netlify frontend to talk to this Railway backend
+const allowedOrigins = [
+  "https://mahakalitextiles.netlify.app",
+  "http://localhost:3000"
+];
+
 app.use(cors({
-  origin: ["https://mahakalitextiles.netlify.app", "http://localhost:3000"],
+  origin: function(origin, callback) {
+    // allow requests with no origin (like Postman or curl)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
