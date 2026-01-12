@@ -4,7 +4,10 @@ import { getDaysInMonth, createEmployee, PRINT_STYLE } from "../utils/payrollHel
 import SalarySlip from "../components/SalarySlip";
 import AdvanceInput from "../components/AdvanceInput";
 
-const API_URL = "http://localhost:5000/api/employees";
+const API_URL =
+  process.env.NODE_ENV === "production"
+    ? process.env.REACT_APP_API_URL
+    : "http://localhost:5000";
 
 export default function AttendancePage() {
   // displayDate controls the Year and Month currently on screen
