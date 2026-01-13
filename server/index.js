@@ -3,6 +3,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const employeeRoutes = require('./routes/employeeRoutes');
+const fabricRoutes = require("./routes/fabricRoutes");
+const productionRoutes = require("./routes/productionRoutes.js")
 
 dotenv.config();
 
@@ -23,6 +25,8 @@ app.use(express.json());
 
 // API Routes
 app.use('/api/employees', employeeRoutes);
+app.use("/api/fabrics", fabricRoutes);
+app.use("/api/production", productionRoutes);
 
 // Health Check
 app.get('/', (req, res) => {

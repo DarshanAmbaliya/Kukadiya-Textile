@@ -1,0 +1,181 @@
+.production-report-section {
+  background-color: #f8f9fa;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+.production-report-section .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+}
+.production-report-section h2 {
+  color: #2c3e50;
+  font-size: 2rem;
+  margin-bottom: 25px;
+  border-left: 5px solid #3498db;
+  padding-left: 15px;
+}
+.production-report-section .filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+  background: #f4f4f4;
+  padding: 15px;
+  border-radius: 8px;
+}
+.production-report-section .filter-controls button {
+  border: 0;
+  border-radius: 2px;
+}
+.production-report-section .filter-controls input {
+  padding: 10px 15px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+.production-report-section .filter-controls input:focus {
+  border-color: #3498db;
+}
+.production-report-section input[type=month] {
+  padding: 10px 15px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+.production-report-section input[type=month]:focus {
+  border-color: #3498db;
+}
+.production-report-section .row {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+.production-report-section .production-data {
+  overflow: auto;
+}
+.production-report-section .production-data table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: none !important;
+  overflow-x: auto;
+  max-width: 100%;
+}
+.production-report-section .production-data table thead tr th {
+  background-color: #2c3e50;
+  color: #ffffff;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  padding: 15px 10px;
+  text-align: center;
+  border: none;
+}
+.production-report-section .production-data table thead tr th:first-child {
+  border-top-left-radius: 8px;
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 10;
+}
+.production-report-section .production-data table thead tr th:last-child {
+  border-top-right-radius: 8px;
+  background-color: rgb(34.9516129032, 49.25, 63.5483870968);
+}
+.production-report-section .production-data table thead tr th small {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+  text-transform: none;
+}
+.production-report-section .production-data table tbody tr {
+  transition: background-color 0.2s ease;
+}
+.production-report-section .production-data table tbody tr td {
+  padding: 5px;
+  text-align: center;
+}
+.production-report-section .production-data table tbody tr td:nth-child(1) {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background-color: white;
+  min-width: -moz-min-content;
+  min-width: min-content;
+}
+.production-report-section .production-data table tbody tr:nth-child(even) {
+  background-color: rgba(248, 249, 250, 0.5);
+}
+.production-report-section .production-data table tbody tr:hover {
+  background-color: rgba(52, 152, 219, 0.05);
+}
+.production-report-section .production-data table tbody tr td {
+  border-bottom: 1px solid #dee2e6;
+  color: #333;
+  text-align: center;
+  font-size: 0.95rem;
+}
+.production-report-section .production-data table tbody tr td:first-child {
+  font-weight: 600;
+  color: #2c3e50;
+}
+.production-report-section .production-data table tfoot tr:last-child td {
+  background-color: #f8f9fa;
+  border-bottom: none;
+  color: #2c3e50;
+  font-size: 1rem;
+  padding: 18px 10px;
+}
+.production-report-section .production-data table tfoot tr:last-child td:first-child {
+  border-bottom-left-radius: 8px;
+}
+.production-report-section .production-data table tfoot tr td:last-child {
+  border-bottom-right-radius: 8px;
+  color: #ffffff;
+  background-color: #3498db;
+  text-align: center;
+}
+
+@media (max-width: 991px) {
+  .production-report-section .filter-controls {
+    gap: 15px;
+  }
+  .production-report-section .filter-controls .filter-menu {
+    display: flex;
+    align-items: center;
+  }
+  .production-report-section .filter-controls .filter-menu label {
+    width: 70px;
+    text-align: start;
+  }
+  .production-report-section .filter-controls .filter-menu:first-child {
+    width: 100%;
+  }
+}
+@media (max-width: 575px) {
+  .production-report-section .filter-controls {
+    gap: 10px;
+  }
+  .production-report-section .filter-controls .filter-menu {
+    width: 100%;
+  }
+  .production-report-section .filter-controls .filter-menu input {
+    width: calc(100% - 100px);
+    max-width: 100%;
+  }
+  .production-report-section .filter-controls .filter-menu .filter-controls input {
+    width: calc(100% - 100px);
+    max-width: 100%;
+  }
+}/*# sourceMappingURL=Productionreport.css.map */
