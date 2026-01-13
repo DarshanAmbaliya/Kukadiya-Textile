@@ -30,7 +30,7 @@ const Fabricquality = () => {
     if (!qualityName) return alert("Please enter a fabric name");
 
     try {
-      await axios.post("http://localhost:5000/api/fabrics", {
+      await axios.post(API_URL, {
         fabricName: qualityName,
       });
       setQualityName("");
