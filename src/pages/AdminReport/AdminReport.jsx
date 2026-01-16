@@ -38,14 +38,19 @@ const AdminReport = () => {
               ? (58340 / (avgPick * totalProduction)).toFixed(2)
               : 0;
 
+          const dayEff = parseFloat(summary.total_average_day_efficiency || 0);
+          const nightEff = parseFloat(summary.total_average_night_efficiency || 0);
+          const avgEfficiency = ((dayEff + nightEff) / 2).toFixed(2);
+
           return {
             date,
             avg_rpm: summary.total_average_rpm || 0,
+            avg_efficiency: Number(avgEfficiency),
             avg_pick: avgPick,
             compressor_meter: summary.compressor_meter || 0,
             main_meter: summary.main_meter || 0,
             total_production_meter: totalProduction,
-            pick_charge: pickCharge,
+            pick_charge: Number(pickCharge),
           };
         });
 
@@ -56,7 +61,7 @@ const AdminReport = () => {
     }
   };
 
-  // ---- FILTER LOGIC (same as ProductionReport) ----
+  // ---- FILTER LOGIC ----
   const filteredData = tableData.filter((row) => {
     if (!startDate && !endDate) return true;
 
@@ -69,18 +74,29 @@ const AdminReport = () => {
 
   const count = filteredData.length;
 
+  // ---- FOOTER CALCULATIONS ----
   const avgRPM =
     count > 0
       ? (
-        filteredData.reduce((sum, r) => sum + Number(r.avg_rpm || 0), 0) / count
-      ).toFixed(2)
+          filteredData.reduce((sum, r) => sum + Number(r.avg_rpm || 0), 0) /
+          count
+        ).toFixed(2)
+      : 0;
+
+  const avgEfficiencyTotal =
+    count > 0
+      ? (
+          filteredData.reduce((sum, r) => sum + Number(r.avg_efficiency || 0), 0) /
+          count
+        ).toFixed(2)
       : 0;
 
   const avgPick =
     count > 0
       ? (
-        filteredData.reduce((sum, r) => sum + Number(r.avg_pick || 0), 0) / count
-      ).toFixed(2)
+          filteredData.reduce((sum, r) => sum + Number(r.avg_pick || 0), 0) /
+          count
+        ).toFixed(2)
       : 0;
 
   const totalCompressor =
@@ -98,9 +114,9 @@ const AdminReport = () => {
   const avgPickCharge =
     count > 0
       ? (
-        filteredData.reduce((sum, r) => sum + Number(r.pick_charge || 0), 0) /
-        count
-      ).toFixed(2)
+          filteredData.reduce((sum, r) => sum + Number(r.pick_charge || 0), 0) /
+          count
+        ).toFixed(2)
       : 0;
 
   return (
@@ -146,7 +162,12 @@ const AdminReport = () => {
             </div>
 
             {(startDate || endDate) && (
-              <button onClick={() => { setStartDate(""); setEndDate(""); }}>
+              <button
+                onClick={() => {
+                  setStartDate("");
+                  setEndDate("");
+                }}
+              >
                 Clear Filters
               </button>
             )}
@@ -167,6 +188,7 @@ const AdminReport = () => {
                 <tr>
                   <th>Date</th>
                   <th>Avg RPM</th>
+                  <th>Avg Efficiency</th> {/* NEW */}
                   <th>Avg Pick</th>
                   <th>Compressor Meter</th>
                   <th>Main Meter</th>
@@ -181,6 +203,7 @@ const AdminReport = () => {
                     <tr key={row.date}>
                       <td>{row.date}</td>
                       <td>{row.avg_rpm}</td>
+                      <td>{row.avg_efficiency}</td> {/* NEW */}
                       <td>{row.avg_pick}</td>
                       <td>{row.compressor_meter}</td>
                       <td>{row.main_meter}</td>
@@ -190,7 +213,7 @@ const AdminReport = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7">No data found</td>
+                    <td colSpan="8">No data found for selected range.</td>
                   </tr>
                 )}
               </tbody>
@@ -199,6 +222,7 @@ const AdminReport = () => {
                 <tr>
                   <td>TOTAL / AVG</td>
                   <td>{avgRPM}</td>
+                  <td>{avgEfficiencyTotal} %</td>
                   <td>{avgPick}</td>
                   <td>-</td>
                   <td>-</td>
@@ -208,7 +232,6 @@ const AdminReport = () => {
               </tfoot>
             </table>
           </div>
-
         </div>
       </div>
     </section>

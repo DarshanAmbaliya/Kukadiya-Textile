@@ -59,7 +59,7 @@ const Production = () => {
     fetchFabrics();
   }, []);
 
-    // Totals and averages
+  // Totals and averages
   const totalDayProd = machines.reduce(
     (s, m) => s + (parseFloat(m.dayMeter) || 0),
     0
@@ -99,12 +99,12 @@ const Production = () => {
     ? (pickValues.reduce((a, b) => a + b, 0) / pickValues.length).toFixed(2)
     : "0.00";
 
-    const avgTotalRPM = (() => {
-      const rpmVals = machines.map(m => parseFloat(m.rpm)).filter(v => v > 0);
-      return rpmVals.length
-        ? (rpmVals.reduce((a, b) => a + b, 0) / rpmVals.length).toFixed(2)
-        : "0.00";
-    })();
+  const avgTotalRPM = (() => {
+    const rpmVals = machines.map(m => parseFloat(m.rpm)).filter(v => v > 0);
+    return rpmVals.length
+      ? (rpmVals.reduce((a, b) => a + b, 0) / rpmVals.length).toFixed(2)
+      : "0.00";
+  })();
 
   const calculateAvg = (opIdx, field) => {
     const block = machines.slice(opIdx * 4, opIdx * 4 + 4);
@@ -435,7 +435,7 @@ const Production = () => {
             })}
           </tbody>
 
-          <tfoot style={{ backgroundColor: "#eee", fontWeight: "bold" }}>
+          <tfoot className="production-tfoot" style={{ backgroundColor: "#eee", fontWeight: "bold" }}>
             <tr>
               <td colSpan="3">SHIFT TOTALS</td>
               <td>{avgTotalRPM}</td>
@@ -445,7 +445,7 @@ const Production = () => {
               <td style={{ color: "blue" }}>{totalBimBalSum}</td>
               <td>{avgDayEff}%</td>
               <td>{avgNightEff}%</td>
-              <td colSpan="2">Total: {totalProdMeter}</td>
+              <td colSpan="2">Total Meter: {totalProdMeter}</td>
               <td>Avg: {avgTotalPick}</td>
             </tr>
             <tr>
@@ -465,10 +465,15 @@ const Production = () => {
                   style={{ width: "100px" }}
                 />
               </td>
-              <td colSpan="4" style={{ textAlign: "right" }}>
+              <td colSpan="2">
+                Average Effciency: <br/> <hr />{(
+                  (parseFloat(avgDayEff) + parseFloat(avgNightEff)) / 2
+                ).toFixed(2)}%
+              </td>
+              <td colSpan="2" style={{ textAlign: "right" }}>
                 Compressor Meter :
               </td>
-              <td colSpan="2">
+              <td colSpan="1">
                 <input
                   type="number"
                   value={footerMeters.compressorMeter}

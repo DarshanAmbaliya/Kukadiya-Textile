@@ -144,4 +144,8 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; font-
   font-weight: 800;
   background: #f0f4ff;
 }
+.production-tfoot tr:first-child td {
+  padding: 5px;
+  font-size: 14px;
+}
 /* attendance page css end */
