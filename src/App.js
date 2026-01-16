@@ -6,6 +6,7 @@ import { Route, Routes } from 'react-router-dom';
 import Production from './pages/Production/Production';
 import Fabricquality from './components/FabricQuality/Fabricquality';
 import ProductionReport from './pages/ProductionReport/ProductionReport';
+import AdminReport from './pages/AdminReport/AdminReport';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path='/production' element={<Production />}/>
         <Route path='/fabric' element={<Fabricquality />}/>
         <Route path='/productionreport' element={<ProductionReport />}/>
+        <Route path='/adminreport' element={<AdminReport />}/>
       </Routes>
     </div>
   );

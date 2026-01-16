@@ -6,6 +6,10 @@ const Production = () => {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const [footerMeters, setFooterMeters] = useState({
+    compressorMeter: "",
+    mainMeter: ""
+  });
 
   /**
  * FIXED API URL LOGIC
@@ -13,11 +17,11 @@ const Production = () => {
  * If you are on Netlify, it uses the production Railway URL.
  * If you are on your computer, it uses localhost.
  */
-const API_BASE_URL = window.location.hostname === "localhost" 
-? "http://localhost:5000" 
-: "https://mahakali-textiles-production.up.railway.app";
+  const API_BASE_URL = window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://mahakali-textiles-production.up.railway.app";
 
-const API_URL = `${API_BASE_URL}`;
+  const API_URL = `${API_BASE_URL}`;
 
   const [machines, setMachines] = useState(
     Array.from({ length: 16 }, (_, i) => ({
@@ -55,7 +59,7 @@ const API_URL = `${API_BASE_URL}`;
     fetchFabrics();
   }, []);
 
-  // Totals and averages
+    // Totals and averages
   const totalDayProd = machines.reduce(
     (s, m) => s + (parseFloat(m.dayMeter) || 0),
     0
@@ -71,31 +75,57 @@ const API_URL = `${API_BASE_URL}`;
     0
   );
 
-  const avgDayEff = (
-    machines.reduce((s, m) => s + (parseFloat(m.dayEff) || 0), 0) / 16
-  ).toFixed(2);
+  const dayEffValues = machines
+    .map(m => parseFloat(m.dayEff))
+    .filter(v => v > 0);
 
-  const avgNightEff = (
-    machines.reduce((s, m) => s + (parseFloat(m.nightEff) || 0), 0) / 16
-  ).toFixed(2);
+  const avgDayEff = dayEffValues.length
+    ? (dayEffValues.reduce((a, b) => a + b, 0) / dayEffValues.length).toFixed(2)
+    : "0.00";
 
-  const avgTotalPick = (
-    machines.reduce((s, m) => s + (parseFloat(m.pick) || 0), 0) / 16
-  ).toFixed(2);
+  const nightEffValues = machines
+    .map(m => parseFloat(m.nightEff))
+    .filter(v => v > 0);
+
+  const avgNightEff = nightEffValues.length
+    ? (nightEffValues.reduce((a, b) => a + b, 0) / nightEffValues.length).toFixed(2)
+    : "0.00";
+
+  const pickValues = machines
+    .map(m => parseFloat(m.pick))
+    .filter(v => v > 0);
+
+  const avgTotalPick = pickValues.length
+    ? (pickValues.reduce((a, b) => a + b, 0) / pickValues.length).toFixed(2)
+    : "0.00";
+
+    const avgTotalRPM = (() => {
+      const rpmVals = machines.map(m => parseFloat(m.rpm)).filter(v => v > 0);
+      return rpmVals.length
+        ? (rpmVals.reduce((a, b) => a + b, 0) / rpmVals.length).toFixed(2)
+        : "0.00";
+    })();
 
   const calculateAvg = (opIdx, field) => {
     const block = machines.slice(opIdx * 4, opIdx * 4 + 4);
-    const total = block.reduce((sum, m) => sum + (parseFloat(m[field]) || 0), 0);
-    return (total / 4).toFixed(2);
+
+    const values = block
+      .map(m => parseFloat(m[field]))
+      .filter(v => v > 0);
+
+    return values.length
+      ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)
+      : "0.00";
   };
+
 
   // Prepare production data object
   useEffect(() => {
     const dateObj = new Date(selectedDate);
     const year = dateObj.getFullYear();
     const months = [
-      "january","february","march","april","may","june","july",
-      "august","september","october","november","december"
+      "january", "february", "march", "april", "may", "june", "july",
+      "august", "september", "october", "november", "december"
     ];
     const monthName = months[dateObj.getMonth()];
     const dateStr = `${String(dateObj.getDate()).padStart(2, "0")}-${String(dateObj.getMonth() + 1).padStart(2, "0")}-${year}`;
@@ -136,15 +166,18 @@ const API_URL = `${API_BASE_URL}`;
               total_night_production: totalNightProd,
               total_bim_balance_sum: totalBimBalSum,
               total_average_pick: avgTotalPick,
+              total_average_rpm: avgTotalRPM,
               total_average_day_efficiency: avgDayEff,
-              total_average_night_efficiency: avgNightEff
+              total_average_night_efficiency: avgNightEff,
+              compressor_meter: footerMeters.compressorMeter,
+              main_meter: footerMeters.mainMeter
             },
             operator_data: entries
           }
         }
       }
     });
-  }, [machines, operators, selectedDate]);
+  }, [machines, operators, selectedDate, footerMeters]);
 
   // Input change handlers
   const handleInputChange = (index, field, value) => {
@@ -188,17 +221,22 @@ const API_URL = `${API_BASE_URL}`;
       try {
         const dateObj = new Date(selectedDate);
         const year = dateObj.getFullYear();
-        const months = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+        const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
         const monthName = months[dateObj.getMonth()];
         const dateStr = `${String(dateObj.getDate()).padStart(2, "0")}-${String(dateObj.getMonth() + 1).padStart(2, "0")}-${year}`;
-  
+
         const res = await axios.get(`${API_URL}/api/production/${year}`);
         const yearData = res.data;
-  
+
         if (yearData?.[monthName]?.[dateStr]) {
           const existing = yearData[monthName][dateStr];
+          setFooterMeters({
+            mainMeter: existing.summary?.main_meter || "",
+            compressorMeter: existing.summary?.compressor_meter || ""
+          });
+          // setAvgTotalRPM(existing.summary?.total_average_rpm || "0.00");
           const opData = existing.operator_data;
-  
+
           // 1. Map Operators
           const newOps = { day: ["", "", "", ""], night: ["", "", "", ""] };
           opData.forEach((entry, idx) => {
@@ -207,7 +245,7 @@ const API_URL = `${API_BASE_URL}`;
             else newOps.night[blockIdx] = entry.operator_name;
           });
           setOperators(newOps);
-  
+
           // 2. Map Machines
           const updatedMachines = machines.map((m) => {
             let machineInfo = { ...m };
@@ -248,7 +286,7 @@ const API_URL = `${API_BASE_URL}`;
         console.error("Error syncing data:", err);
       }
     };
-  
+
     fetchExistingData();
   }, [selectedDate]);
 
@@ -399,7 +437,9 @@ const API_URL = `${API_BASE_URL}`;
 
           <tfoot style={{ backgroundColor: "#eee", fontWeight: "bold" }}>
             <tr>
-              <td colSpan="5">SHIFT TOTALS</td>
+              <td colSpan="3">SHIFT TOTALS</td>
+              <td>{avgTotalRPM}</td>
+              <td></td>
               <td>{totalDayProd}</td>
               <td>{totalNightProd}</td>
               <td style={{ color: "blue" }}>{totalBimBalSum}</td>
@@ -407,6 +447,40 @@ const API_URL = `${API_BASE_URL}`;
               <td>{avgNightEff}%</td>
               <td colSpan="2">Total: {totalProdMeter}</td>
               <td>Avg: {avgTotalPick}</td>
+            </tr>
+            <tr>
+              <td colSpan="6" style={{ textAlign: "right" }}>
+                Main Meter :
+              </td>
+              <td colSpan="2">
+                <input
+                  type="number"
+                  value={footerMeters.mainMeter}
+                  onChange={(e) =>
+                    setFooterMeters(prev => ({
+                      ...prev,
+                      mainMeter: e.target.value
+                    }))
+                  }
+                  style={{ width: "100px" }}
+                />
+              </td>
+              <td colSpan="4" style={{ textAlign: "right" }}>
+                Compressor Meter :
+              </td>
+              <td colSpan="2">
+                <input
+                  type="number"
+                  value={footerMeters.compressorMeter}
+                  onChange={(e) =>
+                    setFooterMeters(prev => ({
+                      ...prev,
+                      compressorMeter: e.target.value
+                    }))
+                  }
+                  style={{ width: "100px" }}
+                />
+              </td>
             </tr>
           </tfoot>
         </table>
