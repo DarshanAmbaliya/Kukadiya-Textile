@@ -405,19 +405,50 @@ const Production = () => {
 
                   {isFirst && (
                     <>
+                      {/* Day Shift */}
                       <td rowSpan="4">
-                        Avg: {calculateAvg(opIdx, "dayMeter")}
-                        <input
-                          value={operators.day[opIdx]}
-                          onChange={(e) => handleOpNameChange("day", opIdx, e.target.value)}
-                        />
+                        <div>
+                          <label>Operator:</label>
+                          <input
+                            value={operators.day[opIdx]}
+                            onChange={(e) => handleOpNameChange("day", opIdx, e.target.value)}
+                            style={{
+                              marginTop: "2px",
+                              marginBottom: "5px",
+                              padding: "2px",
+                              fontSize: "11px"
+                            }}
+                          />
+                        </div>
+                        <div style={{ fontSize: "11px", marginBottom: "3px" }}>
+                          <strong>Average Meter:</strong> {calculateAvg(opIdx, "dayMeter")}
+                        </div>
+                        <div style={{ fontSize: "11px" }}>
+                          <strong>Average Efficiency:</strong> {calculateAvg(opIdx, "dayEff")}%
+                        </div>
                       </td>
+
+                      {/* Night Shift */}
                       <td rowSpan="4">
-                        Avg: {calculateAvg(opIdx, "nightMeter")}
-                        <input
-                          value={operators.night[opIdx]}
-                          onChange={(e) => handleOpNameChange("night", opIdx, e.target.value)}
-                        />
+                        <div>
+                          <label>Operator:</label>
+                          <input
+                            value={operators.night[opIdx]}
+                            onChange={(e) => handleOpNameChange("night", opIdx, e.target.value)}
+                            style={{
+                              marginTop: "2px",
+                              marginBottom: "5px",
+                              padding: "2px",
+                              fontSize: "11px"
+                            }}
+                          />
+                        </div>
+                        <div style={{ fontSize: "11px", marginBottom: "3px" }}>
+                          <strong>Average Meter:</strong> {calculateAvg(opIdx, "nightMeter")}
+                        </div>
+                        <div style={{ fontSize: "11px" }}>
+                          <strong>Average Efficiency:</strong> {calculateAvg(opIdx, "nightEff")}%
+                        </div>
                       </td>
                     </>
                   )}
@@ -466,7 +497,7 @@ const Production = () => {
                 />
               </td>
               <td colSpan="2">
-                Average Effciency: <br/> <hr />{(
+                Average Effciency: <br /> <hr />{(
                   (parseFloat(avgDayEff) + parseFloat(avgNightEff)) / 2
                 ).toFixed(2)}%
               </td>
