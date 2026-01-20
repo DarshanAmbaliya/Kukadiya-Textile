@@ -105,25 +105,25 @@ const AdminReport = () => {
   const avgRPM =
     count > 0
       ? (
-          filteredData.reduce((sum, r) => sum + Number(r.avg_rpm || 0), 0) /
-          count
-        ).toFixed(2)
+        filteredData.reduce((sum, r) => sum + Number(r.avg_rpm || 0), 0) /
+        count
+      ).toFixed(2)
       : 0;
 
   const avgEfficiencyTotal =
     count > 0
       ? (
-          filteredData.reduce((sum, r) => sum + Number(r.avg_efficiency || 0), 0) /
-          count
-        ).toFixed(2)
+        filteredData.reduce((sum, r) => sum + Number(r.avg_efficiency || 0), 0) /
+        count
+      ).toFixed(2)
       : 0;
 
   const avgPick =
     count > 0
       ? (
-          filteredData.reduce((sum, r) => sum + Number(r.avg_pick || 0), 0) /
-          count
-        ).toFixed(2)
+        filteredData.reduce((sum, r) => sum + Number(r.avg_pick || 0), 0) /
+        count
+      ).toFixed(2)
       : 0;
 
   const totalCompressor =
@@ -144,9 +144,9 @@ const AdminReport = () => {
   const avgPickCharge =
     count > 0
       ? (
-          filteredData.reduce((sum, r) => sum + Number(r.pick_charge || 0), 0) /
-          count
-        ).toFixed(2)
+        filteredData.reduce((sum, r) => sum + Number(r.pick_charge || 0), 0) /
+        count
+      ).toFixed(2)
       : 0;
 
   const totalMainUsed =
@@ -208,10 +208,10 @@ const AdminReport = () => {
                 }}
               >
                 {[
-                  "January","February","March","April","May","June",
-                  "July","August","September","October","November","December"
+                  "January", "February", "March", "April", "May", "June",
+                  "July", "August", "September", "October", "November", "December"
                 ].map((m, idx) => (
-                  <option key={m} value={(idx+1).toString().padStart(2,'0')}>{m}</option>
+                  <option key={m} value={(idx + 1).toString().padStart(2, '0')}>{m}</option>
                 ))}
               </select>
             </div>
@@ -285,8 +285,8 @@ const AdminReport = () => {
                       <td>{row.avg_rpm}</td>
                       <td>{row.avg_efficiency}</td>
                       <td>{row.avg_pick}</td>
-                      <td>{row.compressor_meter_used}</td>
-                      <td>{row.main_meter_used}</td>
+                      <td>{Number(row.compressor_meter_used).toFixed(2)}</td>
+                      <td>{Number(row.main_meter_used).toFixed(2)}</td>
                       <td>{row.total_production_meter}</td>
                       <td>{row.pick_charge}</td>
                     </tr>
@@ -304,8 +304,12 @@ const AdminReport = () => {
                   <td>{avgRPM}</td>
                   <td>{avgEfficiencyTotal} %</td>
                   <td>{avgPick}</td>
-                  <td>{avgCompUsed} / {totalCompUsed}</td>
-                  <td>{avgMainUsed} / {totalMainUsed}</td>
+                  <td>
+                    AVG: {Number(avgCompUsed).toFixed(2)} <br/>TOTAL: {Number(totalCompUsed).toFixed(2)}
+                  </td>
+                  <td>
+                    AVG: {Number(avgMainUsed).toFixed(2)} <br/>TOTAL: {Number(totalMainUsed).toFixed(2)}
+                  </td>
                   <td>{totalProduction}</td>
                   <td>{avgPickCharge}</td>
                 </tr>
