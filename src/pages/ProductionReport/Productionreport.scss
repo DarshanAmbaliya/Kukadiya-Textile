@@ -39,7 +39,8 @@ $white: #ffffff;
       border-radius: 2px;
     }
 
-    input {
+    input,
+    select {
       padding: 10px 15px;
       border: 1px solid $border-color;
       border-radius: 6px;
@@ -203,19 +204,16 @@ $white: #ffffff;
       .filter-menu {
         display: flex;
         align-items: center;
+        width: calc(50% - 10px);
 
         label {
           width: 70px;
           text-align: start;
         }
 
-        &:first-child {
+        select,
+        input {
           width: 100%;
-        }
-
-        &:nth-child(2),
-        &:nth-child(3) {
-          // width: ;
         }
       }
     }
@@ -230,14 +228,15 @@ $white: #ffffff;
       .filter-menu {
         width: 100%;
 
-        input {
-          width: calc(100% - 100px);
+        input,
+        select {
+          width: calc(100%);
           max-width: 100%;
         }
 
         .filter-controls {
           input {
-            width: calc(100% - 100px);
+            width: calc(100%);
             max-width: 100%;
           }
         }

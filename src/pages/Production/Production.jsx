@@ -3,9 +3,7 @@ import React, { useEffect, useState } from "react";
 
 const Production = () => {
   const [fabricQuality, setfebricQuality] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [selectedDate, setSelectedDate] = useState("");
   const [footerMeters, setFooterMeters] = useState({
     compressorMeter: "",
     mainMeter: ""
@@ -198,18 +196,6 @@ const Production = () => {
     try {
       await axios.post(`${API_URL}/api/production`, productionData);
       alert("Production Saved Successfully");
-
-      // Clear production fields only
-      setMachines(prev =>
-        prev.map(m => ({
-          ...m,
-          dayMeter: 0,
-          nightMeter: 0,
-          dayEff: 0,
-          nightEff: 0,
-          bimBalance: ""
-        }))
-      );
     } catch (err) {
       console.error(err);
       alert("Error Saving Production");
@@ -290,11 +276,56 @@ const Production = () => {
     fetchExistingData();
   }, [selectedDate]);
 
+  useEffect(() => {
+    const loadLatestDate = async () => {
+      try {
+        const year = new Date().getFullYear();
+        const res = await axios.get(`${API_URL}/api/production/${year}`);
+        const yearData = res.data;
+  
+        if (!yearData) return;
+  
+        const monthsOrder = [
+          "january","february","march","april","may","june",
+          "july","august","september","october","november","december"
+        ];
+  
+        let latestDate = null;
+  
+        monthsOrder.forEach(month => {
+          if (yearData[month]) {
+            Object.keys(yearData[month]).forEach(dateStr => {
+              const [d, m, y] = dateStr.split("-");
+              const dateObj = new Date(`${y}-${m}-${d}`);
+              if (!latestDate || dateObj > latestDate) {
+                latestDate = dateObj;
+              }
+            });
+          }
+        });
+  
+        if (latestDate) {
+          setSelectedDate(latestDate.toISOString().split("T")[0]);
+        }
+      } catch (err) {
+        console.error("Error loading latest production date", err);
+      }
+    };
+  
+    loadLatestDate();
+  }, []);
+  
+
   return (
     <section className="Production-table" style={{ padding: "20px" }}>
       <div className="container">
-        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
+        <h2 style={{display: "flex",justifyContent:'center',gap:"20px", textAlign: "center", marginBottom: "20px" }}>
           Factory Production Entry
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+          />
         </h2>
 
         <table border="1" style={{ width: "100%", borderCollapse: "collapse", textAlign: "center", fontSize: "11px" }}>
@@ -522,11 +553,6 @@ const Production = () => {
         </table>
 
         <div style={{ marginTop: "30px", textAlign: "center" }}>
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-          />
           <button
             onClick={saveProduction}
             style={{

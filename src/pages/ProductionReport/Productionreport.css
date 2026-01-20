@@ -27,7 +27,8 @@
   border: 0;
   border-radius: 2px;
 }
-.production-report-section .filter-controls input {
+.production-report-section .filter-controls input,
+.production-report-section .filter-controls select {
   padding: 10px 15px;
   border: 1px solid #dee2e6;
   border-radius: 6px;
@@ -37,7 +38,8 @@
   outline: none;
   transition: border-color 0.3s ease;
 }
-.production-report-section .filter-controls input:focus {
+.production-report-section .filter-controls input:focus,
+.production-report-section .filter-controls select:focus {
   border-color: #3498db;
 }
 .production-report-section input[type=month] {
@@ -154,12 +156,14 @@
   .production-report-section .filter-controls .filter-menu {
     display: flex;
     align-items: center;
+    width: calc(50% - 10px);
   }
   .production-report-section .filter-controls .filter-menu label {
     width: 70px;
     text-align: start;
   }
-  .production-report-section .filter-controls .filter-menu:first-child {
+  .production-report-section .filter-controls .filter-menu select,
+  .production-report-section .filter-controls .filter-menu input {
     width: 100%;
   }
 }
@@ -170,12 +174,13 @@
   .production-report-section .filter-controls .filter-menu {
     width: 100%;
   }
-  .production-report-section .filter-controls .filter-menu input {
-    width: calc(100% - 100px);
+  .production-report-section .filter-controls .filter-menu input,
+  .production-report-section .filter-controls .filter-menu select {
+    width: 100%;
     max-width: 100%;
   }
   .production-report-section .filter-controls .filter-menu .filter-controls input {
-    width: calc(100% - 100px);
+    width: 100%;
     max-width: 100%;
   }
 }/*# sourceMappingURL=Productionreport.css.map */

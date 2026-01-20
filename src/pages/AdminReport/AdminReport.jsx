@@ -2,8 +2,12 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const AdminReport = () => {
-  const currentMonthStr = new Date().toISOString().slice(0, 7);
-  const [month, setMonth] = useState(currentMonthStr);
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, "0");
+
+  const [year, setYear] = useState(currentYear);
+  const [month, setMonth] = useState(currentMonth);
   const [tableData, setTableData] = useState([]);
 
   const [startDate, setStartDate] = useState("");
@@ -16,16 +20,38 @@ const AdminReport = () => {
 
   const API_URL = `${API_BASE_URL}/api/production/`;
 
+  /* -------------------- HELPER: CALCULATE METER USAGE -------------------- */
+  const calculateMeterUsage = (rows) => {
+    return rows.map((current, index) => {
+      const prev = rows[index - 1];
+
+      const mainUsed = prev
+        ? Number(current.main_meter || 0) - Number(prev.main_meter || 0)
+        : 0;
+
+      const compUsed = prev
+        ? Number(current.compressor_meter || 0) - Number(prev.compressor_meter || 0)
+        : 0;
+
+      return {
+        ...current,
+        main_meter_used: mainUsed,
+        compressor_meter_used: compUsed,
+      };
+    });
+  };
+
+  /* -------------------- FETCH DATA -------------------- */
   useEffect(() => {
     fetchData();
-  }, [month]);
+  }, [year, month]);
 
   const fetchData = async () => {
     try {
-      const res = await axios.get(`${API_URL}month?month=${month}`);
+      const res = await axios.get(`${API_URL}month?month=${year}-${month}`);
       const monthData = res.data;
 
-      const rows = Object.keys(monthData)
+      const rows = Object.keys(monthData || {})
         .sort((a, b) => Number(a.split("-")[0]) - Number(b.split("-")[0]))
         .map((date) => {
           const summary = monthData[date].summary || {};
@@ -47,21 +73,22 @@ const AdminReport = () => {
             avg_rpm: summary.total_average_rpm || 0,
             avg_efficiency: Number(avgEfficiency),
             avg_pick: avgPick,
-            compressor_meter: summary.compressor_meter || 0,
-            main_meter: summary.main_meter || 0,
+            compressor_meter: Number(summary.compressor_meter || 0),
+            main_meter: Number(summary.main_meter || 0),
             total_production_meter: totalProduction,
             pick_charge: Number(pickCharge),
           };
         });
 
-      setTableData(rows);
+      const rowsWithUsage = calculateMeterUsage(rows);
+      setTableData(rowsWithUsage);
     } catch (error) {
       console.error(error);
       setTableData([]);
     }
   };
 
-  // ---- FILTER LOGIC ----
+  /* -------------------- FILTER LOGIC -------------------- */
   const filteredData = tableData.filter((row) => {
     if (!startDate && !endDate) return true;
 
@@ -74,7 +101,7 @@ const AdminReport = () => {
 
   const count = filteredData.length;
 
-  // ---- FOOTER CALCULATIONS ----
+  /* -------------------- FOOTER CALCULATIONS -------------------- */
   const avgRPM =
     count > 0
       ? (
@@ -105,6 +132,9 @@ const AdminReport = () => {
       0
     );
 
+  const totalMainMeter =
+    filteredData.reduce((sum, r) => sum + Number(r.main_meter || 0), 0);
+
   const totalProduction =
     filteredData.reduce(
       (sum, r) => sum + Number(r.total_production_meter || 0),
@@ -119,26 +149,74 @@ const AdminReport = () => {
         ).toFixed(2)
       : 0;
 
+  const totalMainUsed =
+    filteredData.reduce(
+      (sum, r) => sum + Number(r.main_meter_used || 0),
+      0
+    );
+
+  const totalCompUsed =
+    filteredData.reduce(
+      (sum, r) => sum + Number(r.compressor_meter_used || 0),
+      0
+    );
+
+  const avgMainUsed =
+    count > 0
+      ? (totalMainUsed / count).toFixed(2)
+      : 0;
+
+  const avgCompUsed =
+    count > 0
+      ? (totalCompUsed / count).toFixed(2)
+      : 0;
+
+  /* -------------------- UI -------------------- */
   return (
     <section className="production-report-section">
       <div className="container">
         <div className="row">
           <h2>Admin Production Report</h2>
 
-          <div className="filter-controls">
+          <div className="filter-controls" style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            {/* Year Selector */}
+            <div className="filter-menu">
+              <label><strong>Year: </strong></label>
+              <select
+                value={year}
+                onChange={(e) => {
+                  setYear(e.target.value);
+                  setStartDate("");
+                  setEndDate("");
+                }}
+              >
+                {Array.from({ length: 10 }, (_, i) => currentYear - i).map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Month Selector */}
             <div className="filter-menu">
               <label><strong>Month: </strong></label>
-              <input
-                type="month"
+              <select
                 value={month}
                 onChange={(e) => {
                   setMonth(e.target.value);
                   setStartDate("");
                   setEndDate("");
                 }}
-              />
+              >
+                {[
+                  "January","February","March","April","May","June",
+                  "July","August","September","October","November","December"
+                ].map((m, idx) => (
+                  <option key={m} value={(idx+1).toString().padStart(2,'0')}>{m}</option>
+                ))}
+              </select>
             </div>
 
+            {/* From Date */}
             <div className="filter-menu">
               <label><strong>From Date: </strong></label>
               <input
@@ -151,6 +229,7 @@ const AdminReport = () => {
               />
             </div>
 
+            {/* To Date */}
             <div className="filter-menu">
               <label><strong>To Date: </strong></label>
               <input
@@ -161,6 +240,7 @@ const AdminReport = () => {
               />
             </div>
 
+            {/* Clear Filters */}
             {(startDate || endDate) && (
               <button
                 onClick={() => {
@@ -188,7 +268,7 @@ const AdminReport = () => {
                 <tr>
                   <th>Date</th>
                   <th>Avg RPM</th>
-                  <th>Avg Efficiency</th> {/* NEW */}
+                  <th>Avg Efficiency</th>
                   <th>Avg Pick</th>
                   <th>Compressor Meter</th>
                   <th>Main Meter</th>
@@ -203,10 +283,10 @@ const AdminReport = () => {
                     <tr key={row.date}>
                       <td>{row.date}</td>
                       <td>{row.avg_rpm}</td>
-                      <td>{row.avg_efficiency}</td> {/* NEW */}
+                      <td>{row.avg_efficiency}</td>
                       <td>{row.avg_pick}</td>
-                      <td>{row.compressor_meter}</td>
-                      <td>{row.main_meter}</td>
+                      <td>{row.compressor_meter_used}</td>
+                      <td>{row.main_meter_used}</td>
                       <td>{row.total_production_meter}</td>
                       <td>{row.pick_charge}</td>
                     </tr>
@@ -224,8 +304,8 @@ const AdminReport = () => {
                   <td>{avgRPM}</td>
                   <td>{avgEfficiencyTotal} %</td>
                   <td>{avgPick}</td>
-                  <td>-</td>
-                  <td>-</td>
+                  <td>{avgCompUsed} / {totalCompUsed}</td>
+                  <td>{avgMainUsed} / {totalMainUsed}</td>
                   <td>{totalProduction}</td>
                   <td>{avgPickCharge}</td>
                 </tr>
