@@ -15,7 +15,7 @@ export default function AttendanceRecord() {
   ];
   const API_BASE_URL = window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "https://mahakali-textiles-production.up.railway.app";
+    : "https://mahakali-textiles.onrender.com";
 
   const API_URL = `${API_BASE_URL}/api/employees`;
   useEffect(() => {
