@@ -149,3 +149,68 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; font-
   font-size: 14px;
 }
 /* attendance page css end */
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #0B132B, #1C2541);
+  color: #F8FAFC;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-radius: 0;
+  margin: 0;
+}
+.app-header h2 {
+  font-size: 40px;
+}
+/* Left Section */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo {
+  height: 80px;
+  width: auto;
+  border-radius: 8px;
+}
+
+/* User Info */
+.user-info {
+  font-size: 18px;
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+.user-info strong {
+  color: #3afffb;
+}
+
+.device {
+  font-size: 13px;
+  color: white;
+  margin-left: 4px;
+}
+
+/* Logout Button */
+.logout-btn {
+  padding: 8px 20px;
+  background-color: #FF4D4F;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.logout-btn:hover {
+  background-color: #D9363E;
+  transform: translateY(-2px);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+}

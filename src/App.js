@@ -130,9 +130,18 @@ function App() {
 
   return (
     <div className="App">
-      <header style={{ padding: '10px 20px', background: '#333', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span>User: <strong>{currentUser.username}</strong> ({currentUser.device})</span>
-        <button onClick={handleLogout} style={{ padding: '5px 15px', backgroundColor: '#dc3545', color: '#fff', border: 'none', borderRadius: '4px' }}>Logout</button>
+      <header className="app-header">
+        <div className="header-left">
+          <img src="/logo.enc" alt="Logo" className="logo" />
+          <span className="user-info">
+            <strong>{currentUser?.username}</strong>
+            <span className="device"> ({currentUser?.device})</span>
+          </span>
+        </div>
+
+        <button onClick={handleLogout} className="logout-btn">
+          Logout
+        </button>
       </header>
 
       <Routes>

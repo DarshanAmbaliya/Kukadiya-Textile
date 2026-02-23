@@ -16,8 +16,28 @@ const API_BASE_URL = window.location.hostname === "localhost"
 
 const API_URL = `${API_BASE_URL}/api/employees`;
 
+// ✅ Month names declared at top
+const monthNames = [
+  "january", "february", "march", "april", "may", "june",
+  "july", "august", "september", "october", "november", "december"
+];
+
+// ✅ Get current date automatically
+const today = new Date();
+const currentYear = today.getFullYear();
+const currentMonthIdx = today.getMonth();
+
 export default function AttendancePage() {
-  const [displayDate, setDisplayDate] = useState({ year: 2026, monthName: "January", monthIdx: 0 });
+
+  // ✅ Default now uses current month & year
+  const [displayDate, setDisplayDate] = useState({
+    year: currentYear,
+    monthName:
+      monthNames[currentMonthIdx].charAt(0).toUpperCase() +
+      monthNames[currentMonthIdx].slice(1),
+    monthIdx: currentMonthIdx
+  });
+
   const days = getDaysInMonth(displayDate.year, displayDate.monthIdx);
 
   const [employees, setEmployees] = useState([]);
@@ -25,12 +45,11 @@ export default function AttendancePage() {
   const [viewingEmp, setViewingEmp] = useState(null);
   const [newEmpName, setNewEmpName] = useState("");
   const [newEmpRate, setNewEmpRate] = useState(750);
-  
   const [selectedMonthForNew, setSelectedMonthForNew] = useState("");
-  const monthNames = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+
   const availableYears = [2025, 2026, 2027, 2028, 2029, 2030];
 
-  // FETCH DATA: Uses the unified API_URL variable
+  // FETCH DATA
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -38,11 +57,11 @@ export default function AttendancePage() {
         const res = await axios.get(API_URL);
         const yearData = res.data[displayDate.year];
         const monthKey = displayDate.monthName.toLowerCase();
-        
+
         if (yearData && yearData[monthKey]) {
           setEmployees(yearData[monthKey]);
         } else {
-          setEmployees([]); 
+          setEmployees([]);
         }
       } catch (err) {
         console.error("API Connection Failed!", err);
@@ -72,10 +91,10 @@ export default function AttendancePage() {
       setDisplayDate(prev => ({ ...prev, year: parseInt(value) }));
     } else {
       const mIdx = monthNames.indexOf(value.toLowerCase());
-      setDisplayDate(prev => ({ 
-        ...prev, 
-        monthName: value.charAt(0).toUpperCase() + value.slice(1), 
-        monthIdx: mIdx 
+      setDisplayDate(prev => ({
+        ...prev,
+        monthName: value.charAt(0).toUpperCase() + value.slice(1),
+        monthIdx: mIdx
       }));
     }
   };
@@ -89,11 +108,10 @@ export default function AttendancePage() {
     const newMonthIdx = monthNames.indexOf(selectedMonthForNew.toLowerCase());
     const newDays = getDaysInMonth(displayDate.year, newMonthIdx);
 
-    // Carry over names but clear monthly specifics
     const freshData = employees.map(emp => ({
       name: emp.name,
       dailySalary: emp.dailySalary,
-      attendance: new Array(newDays).fill(""), 
+      attendance: new Array(newDays).fill(""),
       advance: [],
       totalPresent: 0,
       totalAbsent: 0,
@@ -109,11 +127,14 @@ export default function AttendancePage() {
         employees: freshData
       });
 
-      setDisplayDate(prev => ({ 
-        ...prev, 
-        monthName: selectedMonthForNew.charAt(0).toUpperCase() + selectedMonthForNew.slice(1), 
-        monthIdx: newMonthIdx 
+      setDisplayDate(prev => ({
+        ...prev,
+        monthName:
+          selectedMonthForNew.charAt(0).toUpperCase() +
+          selectedMonthForNew.slice(1),
+        monthIdx: newMonthIdx
       }));
+
       setEmployees(freshData);
       setSelectedMonthForNew("");
     } catch (err) {
@@ -127,20 +148,24 @@ export default function AttendancePage() {
       if (currentId !== id) return emp;
 
       let updatedEmp = { ...emp, [field]: value };
-      
-      // Re-calculate totals if sensitive fields change
+
       if (['attendance', 'dailySalary', 'advance'].includes(field)) {
         const presentCount = updatedEmp.attendance.filter(x => x === "P").length;
         const absentCount = updatedEmp.attendance.filter(x => x === "A").length;
+
         updatedEmp.totalPresent = presentCount;
         updatedEmp.totalAbsent = absentCount;
         updatedEmp.totalSalary = presentCount * updatedEmp.dailySalary;
+
         updatedEmp.totalAdvance = updatedEmp.advance.reduce((acc, obj) => {
-           const val = Object.values(obj)[0];
-           return acc + (Number(val) || 0);
+          const val = Object.values(obj)[0];
+          return acc + (Number(val) || 0);
         }, 0);
-        updatedEmp.finalPay = updatedEmp.totalSalary - updatedEmp.totalAdvance;
+
+        updatedEmp.finalPay =
+          updatedEmp.totalSalary - updatedEmp.totalAdvance;
       }
+
       return updatedEmp;
     });
 
@@ -150,8 +175,10 @@ export default function AttendancePage() {
 
   const addNewEmployee = async () => {
     if (!newEmpName.trim()) return;
+
     const newEmp = createEmployee(Date.now(), newEmpName, days, newEmpRate);
     const updatedList = [...employees, newEmp];
+
     setEmployees(updatedList);
     await syncToDB(updatedList);
     setNewEmpName("");
@@ -159,7 +186,9 @@ export default function AttendancePage() {
 
   const deleteEmployee = async (id) => {
     if (window.confirm("Delete employee?")) {
-      const updatedList = employees.filter(e => (e._id || e.id) !== id);
+      const updatedList = employees.filter(
+        e => (e._id || e.id) !== id
+      );
       setEmployees(updatedList);
       await syncToDB(updatedList);
     }
@@ -168,14 +197,24 @@ export default function AttendancePage() {
   const removeAdvance = async (empId, advIndex) => {
     const updatedList = employees.map(emp => {
       if ((emp._id || emp.id) !== empId) return emp;
-      const newAdvance = emp.advance.filter((_, idx) => idx !== advIndex);
-      return { 
-        ...emp, 
+
+      const newAdvance = emp.advance.filter(
+        (_, idx) => idx !== advIndex
+      );
+
+      const totalAdv = newAdvance.reduce(
+        (acc, obj) => acc + Number(Object.values(obj)[0]),
+        0
+      );
+
+      return {
+        ...emp,
         advance: newAdvance,
-        totalAdvance: newAdvance.reduce((acc, obj) => acc + Number(Object.values(obj)[0]), 0),
-        finalPay: emp.totalSalary - newAdvance.reduce((acc, obj) => acc + Number(Object.values(obj)[0]), 0)
+        totalAdvance: totalAdv,
+        finalPay: emp.totalSalary - totalAdv
       };
     });
+
     setEmployees(updatedList);
     await syncToDB(updatedList);
   };
@@ -183,9 +222,14 @@ export default function AttendancePage() {
   const printSlip = (id) => {
     const content = document.getElementById(`slip-${id}`).innerHTML;
     const w = window.open("", "_blank");
-    w.document.write(`<html><head><style>${PRINT_STYLE}</style></head><body>${content}</body></html>`);
+    w.document.write(
+      `<html><head><style>${PRINT_STYLE}</style></head><body>${content}</body></html>`
+    );
     w.document.close();
-    setTimeout(() => { w.print(); w.close(); }, 500);
+    setTimeout(() => {
+      w.print();
+      w.close();
+    }, 500);
   };
 
   return (
