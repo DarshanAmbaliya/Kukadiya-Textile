@@ -17,7 +17,7 @@ const Production = () => {
  */
   const API_BASE_URL = window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    :"https://mahakali-textiles.onrender.com";
+    : "https://mahakali-textiles.onrender.com";
 
   const API_URL = `${API_BASE_URL}`;
 
@@ -282,16 +282,16 @@ const Production = () => {
         const year = new Date().getFullYear();
         const res = await axios.get(`${API_URL}/api/production/${year}`);
         const yearData = res.data;
-  
+
         if (!yearData) return;
-  
+
         const monthsOrder = [
-          "january","february","march","april","may","june",
-          "july","august","september","october","november","december"
+          "january", "february", "march", "april", "may", "june",
+          "july", "august", "september", "october", "november", "december"
         ];
-  
+
         let latestDate = null;
-  
+
         monthsOrder.forEach(month => {
           if (yearData[month]) {
             Object.keys(yearData[month]).forEach(dateStr => {
@@ -303,7 +303,7 @@ const Production = () => {
             });
           }
         });
-  
+
         if (latestDate) {
           setSelectedDate(latestDate.toISOString().split("T")[0]);
         }
@@ -311,15 +311,56 @@ const Production = () => {
         console.error("Error loading latest production date", err);
       }
     };
-  
+
     loadLatestDate();
   }, []);
-  
+
+  const calculateLostMeter = (rpm, efficiency, pick, actualMeter) => {
+    const r = Number(rpm);
+    const e = Number(efficiency);
+    const p = Number(pick);
+    const actual = Number(actualMeter);
+
+    if (r <= 0 || e <= 0 || p <= 0) return 0;
+
+    const ideal = (r * (e / 100) * 12 * 60) / (39.37 * p);
+
+    const diff = actual - ideal;   // IMPORTANT CHANGE
+
+    return diff;
+  };
+
+  const totalDayLost = machines.reduce((sum, m) => {
+    return sum + parseFloat(
+      calculateLostMeter(m.rpm, m.dayEff, m.pick, m.dayMeter)
+    );
+  }, 0);
+
+  const totalNightLost = machines.reduce((sum, m) => {
+    return sum + parseFloat(
+      calculateLostMeter(m.rpm, m.nightEff, m.pick, m.nightMeter)
+    );
+  }, 0);
+
+  const grandTotalLost = totalDayLost + totalNightLost;
+
+  const formatLostMeter = (value) => {
+    const num = Number(value);
+
+    if (num > 0) return `+${num.toFixed(2)}`;
+    if (num < 0) return `${num.toFixed(2)}`;
+    return "0.00";
+  };
+
+  const isLowBim = (value) => {
+    const num = Number(value);
+    return num !== 0 && num <= 3000;
+  };
 
   return (
     <section className="Production-table" style={{ padding: "20px" }}>
       <div className="container">
-        <h2 style={{display: "flex",justifyContent:'center',gap:"20px", textAlign: "center", marginBottom: "20px" }}>
+        <h2 style={{ display: "flex", justifyContent: 'center', gap: "20px", textAlign: "center", marginBottom: "20px" }}>
           Factory Production Entry
           <input
             type="date"
@@ -340,6 +381,7 @@ const Production = () => {
               <th rowSpan="2">BIM Balance</th>
               <th colSpan="2">Eff %</th>
               <th colSpan="2">Operator & Avg</th>
+              <th colSpan="2">Loss Meter</th>
               <th rowSpan="2">Pick</th>
             </tr>
             <tr>
@@ -349,6 +391,8 @@ const Production = () => {
               <th>Night</th>
               <th>Day Shift</th>
               <th>Night Shift</th>
+              <th style={{ width: "83px" }}>Day Shift</th>
+              <th style={{ width: "83px" }}>Night Shift</th>
             </tr>
           </thead>
 
@@ -356,6 +400,9 @@ const Production = () => {
             {machines.map((m, index) => {
               const opIdx = Math.floor(index / 4);
               const isFirst = index % 4 === 0;
+
+              const dayLost = calculateLostMeter(m.rpm, m.dayEff, m.pick, m.dayMeter);
+              const nightLost = calculateLostMeter(m.rpm, m.nightEff, m.pick, m.nightMeter);
 
               return (
                 <tr key={m.machineNumber}>
@@ -409,12 +456,20 @@ const Production = () => {
                       style={{ width: "45px" }}
                     />
                   </td>
-                  <td>
+                  <td style={{
+                    backgroundColor: isLowBim(m.bimBalance) ? "red" : "inherit"
+                  }}
+                  >
                     <input
                       type="number"
                       value={m.bimBalance}
                       onChange={(e) => handleInputChange(index, "bimBalance", e.target.value)}
-                      style={{ width: "50px" }}
+                      style={{
+                        width: "50px",
+                        backgroundColor: isLowBim(m.bimBalance) ? "red" : "inherit",
+                        color: isLowBim(m.bimBalance) ? "white" : "inherit",
+                        fontWeight: isLowBim(m.bimBalance) ? "bold" : "normal"
+                      }}
                     />
                   </td>
                   <td>
@@ -484,6 +539,36 @@ const Production = () => {
                     </>
                   )}
 
+                  <td
+                    style={{
+                      fontSize: "13px",
+                      color:
+                        dayLost > 0
+                          ? "green"
+                          : dayLost < 0
+                            ? "red"
+                            : "inherit",
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {formatLostMeter(dayLost)}
+                  </td>
+
+                  <td
+                    style={{
+                      fontSize: "13px",
+                      color:
+                        nightLost > 0
+                          ? "green"
+                          : nightLost < 0
+                            ? "red"
+                            : "inherit",
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {formatLostMeter(nightLost)}
+                  </td>
+
                   <td>
                     <input
                       type="number"
@@ -508,6 +593,33 @@ const Production = () => {
               <td>{avgDayEff}%</td>
               <td>{avgNightEff}%</td>
               <td colSpan="2">Total Meter: {totalProdMeter}</td>
+              <td
+                style={{
+                  fontSize: "13px",
+                  color:
+                    totalDayLost > 0
+                      ? "green"
+                      : totalDayLost < 0
+                        ? "red"
+                        : "inherit",
+                }}
+              >
+                Day Loss: {formatLostMeter(totalDayLost)}
+              </td>
+
+              <td
+                style={{
+                  fontSize: "13px",
+                  color:
+                    totalNightLost > 0
+                      ? "green"
+                      : totalNightLost < 0
+                        ? "red"
+                        : "inherit",
+                }}
+              >
+                Night Loss: {formatLostMeter(totalNightLost)}
+              </td>
               <td>Avg: {avgTotalPick}</td>
             </tr>
             <tr>
@@ -532,7 +644,7 @@ const Production = () => {
                   (parseFloat(avgDayEff) + parseFloat(avgNightEff)) / 2
                 ).toFixed(2)}%
               </td>
-              <td colSpan="2" style={{ textAlign: "right" }}>
+              <td colSpan="1" style={{ textAlign: "right" }}>
                 Compressor Meter :
               </td>
               <td colSpan="1">
@@ -547,6 +659,23 @@ const Production = () => {
                   }
                   style={{ width: "100px" }}
                 />
+              </td>
+              <td
+                colSpan={3}
+                style={{
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  fontSize: "16px",
+                  color:
+                    grandTotalLost > 0
+                      ? "green"
+                      : grandTotalLost < 0
+                        ? "red"
+                        : "inherit",
+                }}
+              >
+                Total Loss Meter :{" "}
+                {formatLostMeter(grandTotalLost)}
               </td>
             </tr>
           </tfoot>

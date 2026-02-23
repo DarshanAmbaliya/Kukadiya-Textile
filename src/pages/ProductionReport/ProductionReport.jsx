@@ -46,7 +46,15 @@ const ProductionReport = () => {
       operatorList.forEach((opName) => (totalMeters[opName] = 0));
 
       const table = Object.keys(monthData)
-        .sort((a, b) => Number(a) - Number(b))
+        .sort((a, b) => {
+          const [dayA, monthA, yearA] = a.split("-");
+          const [dayB, monthB, yearB] = b.split("-");
+
+          const dateA = new Date(`${yearA}-${monthA}-${dayA}`);
+          const dateB = new Date(`${yearB}-${monthB}-${dayB}`);
+
+          return dateA - dateB; // ascending order
+        })
         .map((date) => {
           const row = { date, dailyTotal: 0 };
           operatorList.forEach((opName) => {

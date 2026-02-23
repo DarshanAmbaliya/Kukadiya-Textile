@@ -21,17 +21,23 @@ const AdminReport = () => {
   const API_URL = `${API_BASE_URL}/api/production/`;
 
   /* -------------------- HELPER: CALCULATE METER USAGE -------------------- */
+  /* -------------------- HELPER: CALCULATE METER USAGE -------------------- */
   const calculateMeterUsage = (rows) => {
     return rows.map((current, index) => {
       const prev = rows[index - 1];
 
-      const mainUsed = prev
-        ? Number(current.main_meter || 0) - Number(prev.main_meter || 0)
-        : 0;
+      // If it's the first entry in the list, we don't have a previous day to subtract
+      if (!prev) {
+        return {
+          ...current,
+          main_meter_used: 0,
+          compressor_meter_used: 0,
+        };
+      }
 
-      const compUsed = prev
-        ? Number(current.compressor_meter || 0) - Number(prev.compressor_meter || 0)
-        : 0;
+      // Calculation: (Current Meter - Previous Meter) * 30
+      const mainUsed = (Number(current.main_meter || 0) - Number(prev.main_meter || 0)) * 30;
+      const compUsed = (Number(current.compressor_meter || 0) - Number(prev.compressor_meter || 0)) * 30;
 
       return {
         ...current,
@@ -48,42 +54,69 @@ const AdminReport = () => {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get(`${API_URL}month?month=${year}-${month}`);
-      const monthData = res.data;
+      // 1. Calculate the previous month to get the "Closing Balance"
+      const prevMonthDate = new Date(year, parseInt(month) - 2, 1);
+      const prevYear = prevMonthDate.getFullYear();
+      const prevMonthStr = (prevMonthDate.getMonth() + 1).toString().padStart(2, "0");
 
-      const rows = Object.keys(monthData || {})
-        .sort((a, b) => Number(a.split("-")[0]) - Number(b.split("-")[0]))
+      // 2. Fetch both Current and Previous Month data simultaneously
+      const [currentRes, prevRes] = await Promise.all([
+        axios.get(`${API_URL}month?month=${year}-${month}`),
+        axios.get(`${API_URL}month?month=${prevYear}-${prevMonthStr}`)
+      ]);
+
+      const combinedData = { ...(prevRes.data || {}), ...(currentRes.data || {}) };
+
+      // 3. Process all data into a sorted array by Date object
+      const allRows = Object.keys(combinedData)
+        .sort((a, b) => {
+          const [d1, m1, y1] = a.split("-");
+          const [d2, m2, y2] = b.split("-");
+          return new Date(y1, m1 - 1, d1) - new Date(y2, m2 - 1, d2);
+        })
         .map((date) => {
-          const summary = monthData[date].summary || {};
-
+          const summary = combinedData[date].summary || {};
           const avgPick = parseFloat(summary.total_average_pick || 0);
           const totalProduction = Number(summary.total_production_meter || 0);
 
-          const pickCharge =
-            avgPick > 0 && totalProduction > 0
-              ? (58340 / (avgPick * totalProduction)).toFixed(2)
-              : 0;
-
-          const dayEff = parseFloat(summary.total_average_day_efficiency || 0);
-          const nightEff = parseFloat(summary.total_average_night_efficiency || 0);
-          const avgEfficiency = ((dayEff + nightEff) / 2).toFixed(2);
+          // Pick Charge Logic
+          const pickCharge = (avgPick > 0 && totalProduction > 0)
+            ? (58340 / (avgPick * totalProduction)).toFixed(2)
+            : 0;
 
           return {
             date,
-            avg_rpm: summary.total_average_rpm || 0,
-            avg_efficiency: Number(avgEfficiency),
-            avg_pick: avgPick,
-            compressor_meter: Number(summary.compressor_meter || 0),
             main_meter: Number(summary.main_meter || 0),
+            compressor_meter: Number(summary.compressor_meter || 0),
+            avg_rpm: summary.total_average_rpm || 0,
+            avg_efficiency: Number(((parseFloat(summary.total_average_day_efficiency || 0) +
+              parseFloat(summary.total_average_night_efficiency || 0)) / 2).toFixed(2)),
+            avg_pick: avgPick,
             total_production_meter: totalProduction,
             pick_charge: Number(pickCharge),
           };
         });
 
-      const rowsWithUsage = calculateMeterUsage(rows);
-      setTableData(rowsWithUsage);
+      // 4. APPLY FORMULAS: 
+      // Compressor = (Current - Prev) * 30
+      // Main Meter = (Current - Prev)
+      const calculatedRows = allRows.map((current, index) => {
+        const prev = allRows[index - 1];
+        if (!prev) return { ...current, main_meter_used: 0, compressor_meter_used: 0 };
+
+        return {
+          ...current,
+          main_meter_used: current.main_meter - prev.main_meter,
+          compressor_meter_used: (current.compressor_meter - prev.compressor_meter) * 30,
+        };
+      });
+
+      // 5. FILTER: Keep only the days belonging to the SELECTED month/year
+      const finalData = calculatedRows.filter(row => row.date.includes(`-${month}-${year}`));
+      setTableData(finalData);
+
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching data:", error);
       setTableData([]);
     }
   };
@@ -305,10 +338,10 @@ const AdminReport = () => {
                   <td>{avgEfficiencyTotal} %</td>
                   <td>{avgPick}</td>
                   <td>
-                    AVG: {Number(avgCompUsed).toFixed(2)} <br/>TOTAL: {Number(totalCompUsed).toFixed(2)}
+                    AVG: {Number(avgCompUsed).toFixed(2)} <br />TOTAL: {Number(totalCompUsed).toFixed(2)}
                   </td>
                   <td>
-                    AVG: {Number(avgMainUsed).toFixed(2)} <br/>TOTAL: {Number(totalMainUsed).toFixed(2)}
+                    AVG: {Number(avgMainUsed).toFixed(2)} <br />TOTAL: {Number(totalMainUsed).toFixed(2)}
                   </td>
                   <td>{totalProduction}</td>
                   <td>{avgPickCharge}</td>
