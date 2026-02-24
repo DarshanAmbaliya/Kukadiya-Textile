@@ -221,19 +221,23 @@ export default function AttendancePage() {
 
   const printSlip = (id) => {
     const content = document.getElementById(`slip-${id}`).innerHTML;
-    const w = window.open("", "_blank");
-    w.document.write(
-      `<html><head><style>${PRINT_STYLE}</style></head><body>${content}</body></html>`
-    );
-    w.document.close();
-    setTimeout(() => {
-      w.print();
-      w.close();
-    }, 500);
+    window.print(content)
   };
 
   return (
     <div className="container">
+    <style>
+{`
+@media print {
+
+ .table-wrapper,.app-header,.add-emp-btn{display:none !important;}
+ .modal-overlay{background: none !important; align-items: start !important;padding-top: 80px !important;
+    justify-content: center;}
+ .modal-content{box-shadow: none !important;padding: 0 !important;
+    border-radius: 0 !important;
+    }
+`}
+</style>
       <header className="app-header">
         <div className="title-area">
           <h1 style={{ margin: 0 }}>Payroll: {displayDate.monthName} {displayDate.year}</h1>

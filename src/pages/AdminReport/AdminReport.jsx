@@ -92,6 +92,7 @@ const AdminReport = () => {
             avg_efficiency: Number(((parseFloat(summary.total_average_day_efficiency || 0) +
               parseFloat(summary.total_average_night_efficiency || 0)) / 2).toFixed(2)),
             avg_pick: avgPick,
+            total_lost_meter: Number(summary.total_lost_meter || 0),
             total_production_meter: totalProduction,
             pick_charge: Number(pickCharge),
           };
@@ -204,12 +205,85 @@ const AdminReport = () => {
       ? (totalCompUsed / count).toFixed(2)
       : 0;
 
+  const totalLostMeter = filteredData.reduce((sum, r) => sum + Number(r.total_lost_meter || 0), 0);
+  const formatWithSign = (num) => {
+    const value = Number(num);
+    if (value > 0) return `+${value.toFixed(2)}`;
+    if (value < 0) return `${value.toFixed(2)}`; // Minus is automatic
+    return "0.00";
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
   /* -------------------- UI -------------------- */
   return (
     <section className="production-report-section">
+      <style>
+        {`
+          @media print {
+            @page {
+              size: portrait;
+              margin: 8mm; /* Smaller margins to give more space to the table */
+            }
+            .title {
+              display: block !important;
+              border: 0 !important;
+            }
+            body {
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            /* Hide UI elements */.subtitle, .print-btn, button ,.app-header{
+              display: none !important;
+            }
+            .title {
+              text-align: center !important;
+              font-size: 18pt !important;
+              margin-bottom: 15px !important;
+              text-transform: uppercase;
+              border-bottom: 1px solid #000;
+              padding-bottom: 5px;
+            }
+            table {
+              width: 100% !important;
+              border-collapse: collapse !important;
+              table-layout: auto; /* Allow columns to shrink to content */
+            }
+            th, td {
+              border: 0.5pt solid #000 !important; /* Thinner lines look cleaner in Portrait */
+              padding: 4px 2px !important; /* Very tight padding for narrow columns */
+              font-size: 8pt !important; /* Smaller font to ensure 9 columns fit */
+              text-align: center !important;
+            }
+            thead {
+              display: table-header-group;
+              background-color: #f0f0f0 !important;
+            }
+            /* Ensure the Lost Meter colors print clearly */
+            .loss-pos { color: #d32f2f !important; font-weight: bold; }
+            .loss-neg { color: #2e7d32 !important; font-weight: bold; }
+          }
+        `}
+      </style>
       <div className="container">
         <div className="row">
-          <h2>Admin Production Report</h2>
+          <h2 className="title" style={{ textAlign: "center", marginBottom: "20px" }}>
+            Mahakali Textiles - {monthNames[parseInt(month) - 1]} {year}
+          </h2>
+          <h2 className="subtitle">Admin Production Report
+            <button
+              className="print-btn"
+              onClick={handlePrint}
+              style={{ padding: "8px 16px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >Print Report</button>
+          </h2>
 
           <div className="filter-controls" style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             {/* Year Selector */}
@@ -305,6 +379,7 @@ const AdminReport = () => {
                   <th>Avg Pick</th>
                   <th>Compressor Meter</th>
                   <th>Main Meter</th>
+                  <th>Total Lost Meter</th>
                   <th>Total Production Meter</th>
                   <th>Pick Charge</th>
                 </tr>
@@ -320,6 +395,11 @@ const AdminReport = () => {
                       <td>{row.avg_pick}</td>
                       <td>{Number(row.compressor_meter_used).toFixed(2)}</td>
                       <td>{Number(row.main_meter_used).toFixed(2)}</td>
+                      <td style={{
+                        color: row.total_lost_meter > 0 ? "#2e7d32" : row.total_lost_meter < 0 ? "red" : "black"
+                      }}>
+                        {formatWithSign(row.total_lost_meter)}
+                      </td>
                       <td>{row.total_production_meter}</td>
                       <td>{row.pick_charge}</td>
                     </tr>
@@ -343,6 +423,9 @@ const AdminReport = () => {
                   <td>
                     AVG: {Number(avgMainUsed).toFixed(2)} <br />TOTAL: {Number(totalMainUsed).toFixed(2)}
                   </td>
+                  <td style={{
+                    color: totalLostMeter > 0 ? "#2e7d32" : totalLostMeter < 0 ? "red" : "black"
+                  }}>{formatWithSign(totalLostMeter)}</td>
                   <td>{totalProduction}</td>
                   <td>{avgPickCharge}</td>
                 </tr>

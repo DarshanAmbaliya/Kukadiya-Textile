@@ -22,8 +22,11 @@ $white: #ffffff;
     margin-bottom: 25px;
     border-left: 5px solid $accent-color;
     padding-left: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
-
+  .title {display: none;}
   // Input styling
   .filter-controls {
     display: flex;

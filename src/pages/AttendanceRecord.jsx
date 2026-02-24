@@ -4,15 +4,21 @@ import SalarySlip from "../components/SalarySlip";
 
 export default function AttendanceRecord() {
   const [record, setRecord] = useState({});
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
-  const [selectedMonth, setSelectedMonth] = useState("");
-  const [employeeList, setEmployeeList] = useState([]);
-  const [viewingSlip, setViewingSlip] = useState(null);
 
+  // 1. Get current month/year for defaults
+  const now = new Date();
+  const currentYearStr = now.getFullYear().toString();
   const monthNames = [
     "january", "february", "march", "april", "may", "june",
     "july", "august", "september", "october", "november", "december"
   ];
+  const currentMonthName = monthNames[now.getMonth()];
+
+  const [selectedYear, setSelectedYear] = useState(currentYearStr);
+  const [selectedMonth, setSelectedMonth] = useState(currentMonthName);
+  const [employeeList, setEmployeeList] = useState([]);
+  const [viewingSlip, setViewingSlip] = useState(null);
+
   const API_BASE_URL = window.location.hostname === "localhost"
     ? "http://localhost:5000"
     : "https://mahakali-textiles.onrender.com";
@@ -51,7 +57,17 @@ export default function AttendanceRecord() {
   return (
     <section className="attendance-history">
       <div className="container">
-
+        <style>
+          {`
+@media print {
+.app-header,.add-emp-btn{display:none !important;}
+ .modal-overlay{background: none !important; align-items: start !important;padding-top: 80px !important;
+    justify-content: center;}
+ .modal-content{box-shadow: none !important;padding: 0 !important;
+    border-radius: 0 !important;
+    }
+`}
+        </style>
         {/* --- SCREEN HEADER --- */}
         <div className="app-header no-print">
           <div className="brand">
@@ -112,6 +128,13 @@ export default function AttendanceRecord() {
                   <td className="text-a">₹{emp.totalAdvance}</td>
                   <td className="text-net">₹{emp.finalPay}</td>
                   <td className="no-print">
+                    {viewingSlip && (
+                      <SalarySlip
+                        emp={viewingSlip}
+                        month={selectedMonth.toUpperCase()}
+                        year={selectedYear}
+                      />
+                    )}
                     <button onClick={() => setViewingSlip(emp)} className="slip-btn">Slip</button>
                   </td>
                 </tr>
