@@ -116,6 +116,10 @@ const Production = () => {
       : "0.00";
   };
 
+  const calculateSum = (opIdx, field) => {
+    const block = machines.slice(opIdx * 4, opIdx * 4 + 4);
+    return block.reduce((acc, m) => acc + (parseFloat(m[field]) || 0), 0).toFixed(2);
+  };
 
   // Prepare production data object
   useEffect(() => {
@@ -168,7 +172,10 @@ const Production = () => {
               total_average_day_efficiency: avgDayEff,
               total_average_night_efficiency: avgNightEff,
               compressor_meter: footerMeters.compressorMeter,
-              main_meter: footerMeters.mainMeter
+              main_meter: footerMeters.mainMeter,
+              total_day_lost_meter: totalDayLost,
+              total_night_lost_meter: totalNightLost,
+              total_lost_meter: grandTotalLost
             },
             operator_data: entries
           }
@@ -507,6 +514,9 @@ const Production = () => {
                           />
                         </div>
                         <div style={{ fontSize: "11px", marginBottom: "3px" }}>
+                          <strong>Total Meter:</strong> {calculateSum(opIdx, "dayMeter")}
+                        </div>
+                        <div style={{ fontSize: "11px", marginBottom: "3px" }}>
                           <strong>Average Meter:</strong> {calculateAvg(opIdx, "dayMeter")}
                         </div>
                         <div style={{ fontSize: "11px" }}>
@@ -528,6 +538,9 @@ const Production = () => {
                               fontSize: "11px"
                             }}
                           />
+                        </div>
+                        <div style={{ fontSize: "11px", marginBottom: "3px" }}>
+                          <strong>Total Meter:</strong> {calculateSum(opIdx, "nightMeter")}
                         </div>
                         <div style={{ fontSize: "11px", marginBottom: "3px" }}>
                           <strong>Average Meter:</strong> {calculateAvg(opIdx, "nightMeter")}
