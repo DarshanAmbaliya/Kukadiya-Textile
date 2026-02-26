@@ -7,8 +7,10 @@ export default function SalarySlip({ emp, month, year }) {
   }
 
   // 2. Safe ID Formatting: Handle potential undefined IDs
-  const displayID = emp.id ? emp.id.toString().slice(-4) : "0000";
-  
+  const fullID = emp?._id ? emp._id.toString() : "0000";
+  const shortID = fullID.substring(0, 3).toUpperCase();
+  const displayID = `${emp.name?.toUpperCase() || "EMP"}-${shortID}`;
+
   // 3. Calculation Fallbacks
   const dailyRate = emp.dailySalary || 0;
   const presentDays = emp.totalPresent || 0;
@@ -19,7 +21,7 @@ export default function SalarySlip({ emp, month, year }) {
   return (
     <div className="slip-div">
       <div className="slip-container">
-        
+
         {/* --- Header --- */}
         <div className="slip-header">
           <h2>MAHAKALI TEXTILES</h2>
@@ -38,7 +40,7 @@ export default function SalarySlip({ emp, month, year }) {
                 {emp.name || "N/A"}
               </td>
               <td className="label">Employee ID:</td>
-              <td className="value">#{displayID}</td>
+              <td className="value">{displayID}</td>
             </tr>
             <tr>
               <td className="label">Daily Rate:</td>
@@ -60,7 +62,7 @@ export default function SalarySlip({ emp, month, year }) {
         </table>
 
         {/* --- Earnings & Deductions Table --- */}
-        
+
         <table className="slip-table main-details">
           <thead>
             <tr>

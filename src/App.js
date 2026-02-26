@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import { Route, Routes, Navigate, useNavigate, NavLink } from 'react-router-dom';
 import { UAParser } from 'ua-parser-js';
+import bcrypt from "bcryptjs";
 import './App.css';
 
 // Page Imports
@@ -11,15 +12,6 @@ import Production from './pages/Production/Production';
 import Fabricquality from './components/FabricQuality/Fabricquality';
 import ProductionReport from './pages/ProductionReport/ProductionReport';
 import AdminReport from './pages/AdminReport/AdminReport';
-
-function simpleHash(str) {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash = hash & hash;
-  }
-  return hash;
-}
 
 const getDeviceDetails = () => {
   const parser = new UAParser();
@@ -32,10 +24,10 @@ const getDeviceDetails = () => {
 };
 
 const USERS_DB = [
-  { username: 'admin', hash: simpleHash('5242MT'), role: 'admin', name: 'Administrator' },
-  { username: 'manager', hash: simpleHash('m@0101'), role: 'manager', name: 'Production Manager' },
-  { username: 'pushpa', hash: simpleHash('MT1234'), role: 'user', name: 'Staff' },
-  { username: 'santosh', hash: simpleHash('MT4321'), role: 'user', name: 'Staff' }
+  { username: 'admin', hash: '$2b$10$Wi5OE4ZlocW49O/8qDbbgOatoV5Nbn/ug9pTLJohPdkoS53PU5MI2', role: 'admin', name: 'Administrator' },
+  { username: 'manager', hash: '$2b$10$7Z9YL9tJ6rLy.sGH.I34OOPkE.zOHQ46fRv5c0IiaSzXos5EyGX6i', role: 'manager', name: 'Production Manager' },
+  { username: 'pushpa', hash: '$2b$10$Cm5gvq8M5UMg/E5c3xb0MObavpgU2f1TsFff2A84UM.7YbHsbvwwS', role: 'user', name: 'Staff' },
+  { username: 'santosh', hash: '$2b$10$Psmc.ocZNxrl4JaPDdQlj.2p8w3xyL5bpCWjyvuzsKyF1/VbnWg3q', role: 'user', name: 'Staff' }
 ];
 
 function App() {
@@ -81,7 +73,7 @@ function App() {
     e.preventDefault();
     const userMatch = USERS_DB.find(
       (u) => u.username.toLowerCase() === credentials.username.toLowerCase() &&
-        u.hash === simpleHash(credentials.password)
+        bcrypt.compareSync(credentials.password, u.hash)
     );
 
     if (userMatch) {
@@ -132,7 +124,9 @@ function App() {
     <div className="App">
       <header className="app-header">
         <div className="header-left">
-          <img src="/logo.enc" alt="Logo" className="logo" />
+          <NavLink to='/'>
+            <img src="/logo.enc" alt="Logo" className="logo" />
+          </NavLink>
           <span className="user-info">
             <strong>{currentUser?.username}</strong>
             <span className="device"> ({currentUser?.device})</span>
@@ -146,7 +140,7 @@ function App() {
 
       <Routes>
         <Route path='/' element={<Homepage currentUser={currentUser} />} />
-        <Route path='/attendance' element={<AttendancePage />} />
+        <Route path='/attendance' element={<AttendancePage currentUser={currentUser} />} />
         <Route path='/production' element={<Production />} />
         <Route path='/fabric' element={<Fabricquality />} />
         <Route path='/attendancerecord' element={currentUser.role === 'admin' ? <AttendanceRecord /> : <Navigate to="/" />} />

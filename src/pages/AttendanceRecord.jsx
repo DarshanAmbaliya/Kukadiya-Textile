@@ -46,13 +46,27 @@ export default function AttendanceRecord() {
     }
   }, [selectedYear, selectedMonth, record]);
 
-  const handlePrint = () => { window.print(); };
-
   const totals = employeeList.reduce((acc, emp) => ({
     salary: acc.salary + (emp.totalSalary || 0),
     advance: acc.advance + (emp.totalAdvance || 0),
     net: acc.net + (emp.finalPay || 0)
   }), { salary: 0, advance: 0, net: 0 });
+
+  const handlePrint = () => {
+    document.body.classList.remove("printing-slip"); // Ensure slip mode is OFF
+    window.print();
+  };
+  // 2. For the Individual Salary Slip
+const handlePrintSlip = () => {
+  document.body.classList.add("printing-slip"); // Turn slip mode ON
+  
+  // Use a tiny timeout to let the browser apply the class before the dialog opens
+  setTimeout(() => {
+    window.print();
+    // Remove the class after the print dialog closes so the UI goes back to normal
+    document.body.classList.remove("printing-slip");
+  }, 100);
+};
 
   return (
     <section className="attendance-history">
@@ -178,7 +192,7 @@ export default function AttendanceRecord() {
               />
             </div>
             <div className="modal-actions">
-              <button className="print-report-btn" onClick={() => window.print()}>Print This Slip</button>
+              <button className="print-report-btn" onClick={handlePrintSlip}>Print This Slip</button>
             </div>
           </div>
         </div>
@@ -239,11 +253,11 @@ export default function AttendanceRecord() {
         .modal-overlay { position: fixed; inset: 0; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:999; padding: 15px; }
         .slip-paper { 
             background: white; 
-            padding: 30px 20px; 
+            padding: 30px; 
             border-radius: 8px; 
             position: relative; 
             width: 100%; 
-            max-width: 600px; 
+            max-width: 858px; 
             max-height: 90vh; 
             display: flex; 
             flex-direction: column; 
@@ -280,6 +294,39 @@ export default function AttendanceRecord() {
           .signature-section { display: flex !important; justify-content: space-between; margin-top: 50px; }
           .sig-box { border-top: 1.5px solid #000; width: 40%; text-align: center; padding-top: 5px; font-weight: bold; }
         }
+
+        /* --- SLIP PRINTING LOGIC --- */
+  @media print {
+    /* When we are printing a SLIP, hide the main report and table */
+    body.printing-slip .no-print,
+    body.printing-slip .app-header,
+    body.printing-slip .table-wrapper,
+    body.printing-slip .print-only,
+    body.printing-slip .signature-section {
+      display: none !important;
+    }
+
+    /* Show only the modal content and make it fill the page */
+    body.printing-slip .modal-overlay {
+      position: static !important;
+      display: block !important;
+      padding: 0 !important;
+      background: none !important;
+    }
+
+    body.printing-slip .modal-content {
+      box-shadow: none !important;
+      border: none !important;
+      width: 100% !important;
+      max-width: none !important;
+    }
+
+    /* Hide the 'Print' and 'Close' buttons on the actual printed paper */
+    body.printing-slip .modal-actions,
+    body.printing-slip .close-x {
+      display: none !important;
+    }
+  }
       `}</style>
     </section>
   );
