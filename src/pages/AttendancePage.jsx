@@ -3,6 +3,7 @@ import axios from "axios";
 import { getDaysInMonth, createEmployee, PRINT_STYLE } from "../utils/payrollHelpers";
 import SalarySlip from "../components/SalarySlip";
 import AdvanceInput from "../components/AdvanceInput";
+import bcrypt from 'bcryptjs'
 
 /**
  * FIXED API URL LOGIC
@@ -10,8 +11,8 @@ import AdvanceInput from "../components/AdvanceInput";
  * If you are on Netlify, it uses the production Railway URL.
  * If you are on your computer, it uses localhost.
  */
-const API_BASE_URL = window.location.hostname === "localhost" 
-  ? "http://localhost:5000" 
+const API_BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost:5000"
   : "https://mahakali-textiles.onrender.com";
 
 const API_URL = `${API_BASE_URL}/api/employees`;
@@ -27,8 +28,8 @@ const today = new Date();
 const currentYear = today.getFullYear();
 const currentMonthIdx = today.getMonth();
 
-export default function AttendancePage() {
-
+export default function AttendancePage({ currentUser }) {
+  const isAdmin = currentUser?.role === 'admin';
   // ✅ Default now uses current month & year
   const [displayDate, setDisplayDate] = useState({
     year: currentYear,
@@ -184,39 +185,69 @@ export default function AttendancePage() {
     setNewEmpName("");
   };
 
-  const deleteEmployee = async (id) => {
-    if (window.confirm("Delete employee?")) {
-      const updatedList = employees.filter(
-        e => (e._id || e.id) !== id
-      );
+  const deleteEmployee = async (emp) => {
+    const targetId = emp._id || emp.id;
+    const targetName = emp.name;
+  
+    // 1. First verification: Admin Password
+    // const password = window.prompt(`To delete ${targetName}, enter Admin Password:`);
+    // if (!password) return;
+  
+    // Verify using your bcrypt hash for '5242MT'
+    // const adminHash = '$2b$10$Wi5OE4ZlocW49O/8qDbbgOatoV5Nbn/ug9pTLJohPdkoS53PU5MI2';
+    // const isMatch = bcrypt.compareSync(password, adminHash);
+  
+    // if (!isMatch) {
+    //   alert("Incorrect password!");
+    //   return;
+    // }
+  
+    // 2. Second verification: Employee Name check
+    const confirmName = window.prompt(`Type "${targetName}" to confirm deletion:`);
+    
+    if (confirmName === targetName) {
+      const updatedList = employees.filter(e => (e._id || e.id) !== targetId);
       setEmployees(updatedList);
       await syncToDB(updatedList);
+      alert(`${targetName} has been deleted.`);
+    } else {
+      alert("Name did not match. Deletion cancelled.");
     }
   };
 
-  const removeAdvance = async (empId, advIndex) => {
-    const updatedList = employees.map(emp => {
-      if ((emp._id || emp.id) !== empId) return emp;
-
-      const newAdvance = emp.advance.filter(
-        (_, idx) => idx !== advIndex
-      );
-
-      const totalAdv = newAdvance.reduce(
-        (acc, obj) => acc + Number(Object.values(obj)[0]),
-        0
-      );
-
-      return {
-        ...emp,
-        advance: newAdvance,
-        totalAdvance: totalAdv,
-        finalPay: emp.totalSalary - totalAdv
-      };
-    });
-
-    setEmployees(updatedList);
-    await syncToDB(updatedList);
+  const removeAdvance = async (emp, advIndex) => {
+    const empId = emp._id || emp.id;
+    const targetAdv = emp.advance[advIndex];
+    
+    // Extract date and amount from the advance object
+    const advDate = Object.keys(targetAdv)[0];
+    const advAmount = Object.values(targetAdv)[0];
+  
+    // Show prompt asking to type employee name
+    const confirmMsg = `Remove Advance of ₹${advAmount} (${advDate}) for ${emp.name}? \n\nType "${emp.name}" to confirm:`;
+    const userInput = window.prompt(confirmMsg);
+  
+    if (userInput === emp.name) {
+      const updatedList = employees.map(e => {
+        if ((e._id || e.id) !== empId) return e;
+  
+        const newAdvance = e.advance.filter((_, idx) => idx !== advIndex);
+        const totalAdv = newAdvance.reduce((acc, obj) => acc + Number(Object.values(obj)[0]), 0);
+  
+        return {
+          ...e,
+          advance: newAdvance,
+          totalAdvance: totalAdv,
+          finalPay: e.totalSalary - totalAdv
+        };
+      });
+  
+      setEmployees(updatedList);
+      await syncToDB(updatedList);
+      alert("Advance removed successfully.");
+    } else if (userInput !== null) {
+      alert("Name mismatch! Action cancelled.");
+    }
   };
 
   const printSlip = (id) => {
@@ -226,8 +257,8 @@ export default function AttendancePage() {
 
   return (
     <div className="container">
-    <style>
-{`
+      <style>
+        {`
 @media print {
 
  .table-wrapper,.app-header,.add-emp-btn{display:none !important;}
@@ -237,7 +268,7 @@ export default function AttendancePage() {
     border-radius: 0 !important;
     }
 `}
-</style>
+      </style>
       <header className="app-header">
         <div className="title-area">
           <h1 style={{ margin: 0 }}>Payroll: {displayDate.monthName} {displayDate.year}</h1>
@@ -255,7 +286,7 @@ export default function AttendancePage() {
           <div className="add-emp-box">
             <input placeholder="New Employee Name" value={newEmpName} onChange={e => setNewEmpName(e.target.value)} />
             <input type="number" placeholder="Rate" style={{ width: '80px' }} value={newEmpRate} onChange={e => setNewEmpRate(e.target.value)} />
-            <button className="add-emp-btn" onClick={addNewEmployee}>+ Add Employee</button>
+            {isAdmin && (<><button className="add-emp-btn" onClick={addNewEmployee}>+ Add Employee</button></>)}
           </div>
 
           <div className="month-create-box">
@@ -291,19 +322,19 @@ export default function AttendancePage() {
               employees.map(emp => (
                 <tr key={emp._id || emp.id}>
                   <td className="sticky-col">
-                    <input 
-                       type="text" 
-                       value={emp.name} 
-                       onChange={e => updateField(emp._id || emp.id, 'name', e.target.value)} 
-                       style={{ border: 'none', background: 'transparent', fontWeight: 'bold', width: '100%' }} 
+                    <input
+                      type="text"
+                      value={emp.name}
+                      onChange={e => updateField(emp._id || emp.id, 'name', e.target.value)}
+                      style={{ border: 'none', background: 'transparent', fontWeight: 'bold', width: '100%' }}
                     />
                   </td>
                   <td>
-                    <input 
-                       type="number" 
-                       className="rate-input" 
-                       value={emp.dailySalary} 
-                       onChange={e => updateField(emp._id || emp.id, 'dailySalary', Number(e.target.value))} 
+                    <input
+                      type="number"
+                      className="rate-input"
+                      value={emp.dailySalary}
+                      onChange={e => updateField(emp._id || emp.id, 'dailySalary', Number(e.target.value))}
                     />
                   </td>
                   {emp.attendance.map((v, i) => (
@@ -323,15 +354,15 @@ export default function AttendancePage() {
                   <td className="stats-cell text-a">{emp.totalAbsent || 0}</td>
                   <td>₹{emp.totalSalary}</td>
                   <td>
-                    <AdvanceInput onAdd={(d, a) => {
+                    {isAdmin && (<><AdvanceInput onAdd={(d, a) => {
                       const newAdv = [...emp.advance, { [d]: Number(a) }];
                       updateField(emp._id || emp.id, 'advance', newAdv);
-                    }} />
+                    }} /></>)}
                     <div className="adv-grid">
                       {emp.advance.map((obj, idx) => (
                         <div key={idx} className="adv-tag">
                           <span>{Object.keys(obj)[0]}: ₹{Object.values(obj)[0]}</span>
-                          <button onClick={() => removeAdvance(emp._id || emp.id, idx)}>&times;</button>
+                          {isAdmin && (<><button onClick={() => removeAdvance(emp, idx)}>&times;</button></>)}
                         </div>
                       ))}
                     </div>
@@ -339,7 +370,7 @@ export default function AttendancePage() {
                   <td className="money-text highlight">₹{emp.finalPay}</td>
                   <td className="action-cell">
                     <button className="view-btn" onClick={() => setViewingEmp(emp)}>View</button>
-                    <button className="trash-btn" onClick={() => deleteEmployee(emp._id || emp.id)}>🗑️</button>
+                    {isAdmin && (<><button className="trash-btn" onClick={() => deleteEmployee(emp)}>🗑️</button></>)}
                     <div id={`slip-${emp._id || emp.id}`} style={{ display: "none" }}>
                       <SalarySlip emp={emp} month={displayDate.monthName} year={displayDate.year} />
                     </div>
@@ -349,7 +380,7 @@ export default function AttendancePage() {
             ) : (
               <tr>
                 <td colSpan={days + 8} style={{ padding: '60px', textAlign: 'center' }}>
-                  No data found for {displayDate.monthName} {displayDate.year}. 
+                  No data found for {displayDate.monthName} {displayDate.year}.
                   Select a month and click "Create Data" to begin.
                 </td>
               </tr>
