@@ -92,6 +92,7 @@ const AdminReport = () => {
             avg_efficiency: Number(((parseFloat(summary.total_average_day_efficiency || 0) +
               parseFloat(summary.total_average_night_efficiency || 0)) / 2).toFixed(2)),
             avg_pick: avgPick,
+            total_machine_stop_loss_meter: Number(summary.machine_stop_loss_meter || 0),
             total_lost_meter: Number(summary.total_lost_meter || 0),
             total_production_meter: totalProduction,
             pick_charge: Number(pickCharge),
@@ -212,6 +213,11 @@ const AdminReport = () => {
     if (value < 0) return `${value.toFixed(2)}`; // Minus is automatic
     return "0.00";
   };
+
+  const totalMachineStopLoss = filteredData.reduce(
+    (sum, r) => sum + Number(r.total_machine_stop_loss_meter || 0),
+    0
+  );
 
   const handlePrint = () => {
     window.print();
@@ -379,7 +385,8 @@ const AdminReport = () => {
                   <th>Avg Pick</th>
                   <th>Compressor Meter</th>
                   <th>Main Meter</th>
-                  <th>Total Lost Meter</th>
+                  <th>Total Machine Loss Meter</th>
+                  <th>Total Loss Meter</th>
                   <th>Total Production Meter</th>
                   <th>Pick Charge</th>
                 </tr>
@@ -395,6 +402,11 @@ const AdminReport = () => {
                       <td>{row.avg_pick}</td>
                       <td>{Number(row.compressor_meter_used).toFixed(2)}</td>
                       <td>{Number(row.main_meter_used).toFixed(2)}</td>
+                      <td style={{
+                        color: row.total_machine_stop_loss_meter > 0 ? "#2e7d32" : row.total_machine_stop_loss_meter < 0 ? "red" : "black"
+                      }}>
+                        {formatWithSign(row.total_machine_stop_loss_meter)}
+                      </td>
                       <td style={{
                         color: row.total_lost_meter > 0 ? "#2e7d32" : row.total_lost_meter < 0 ? "red" : "black"
                       }}>
@@ -422,6 +434,11 @@ const AdminReport = () => {
                   </td>
                   <td>
                     AVG: {Number(avgMainUsed).toFixed(2)} <br />TOTAL: {Number(totalMainUsed).toFixed(2)}
+                  </td>
+                  <td style={{
+                    color: totalMachineStopLoss > 0 ? "#2e7d32" : totalMachineStopLoss < 0 ? "red" : "black"
+                  }}>
+                    {formatWithSign(totalMachineStopLoss)}
                   </td>
                   <td style={{
                     color: totalLostMeter > 0 ? "#2e7d32" : totalLostMeter < 0 ? "red" : "black"
