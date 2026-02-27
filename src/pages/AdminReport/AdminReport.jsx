@@ -105,6 +105,7 @@ const AdminReport = () => {
         const totalProduction = Number(current.total_production_meter || 0);
         const totalPick = Number(current.total_pick || 0);
   
+        // 18.5 - 5.5 (30 days)
         const pickChargeFixedCost = (avgPick > 0 && totalProduction > 0)
           ? (41666 / (avgPick * totalProduction))
           : 0;
