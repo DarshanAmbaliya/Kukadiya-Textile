@@ -397,6 +397,7 @@ const Production = () => {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
+            style={{cursor: 'pointer'}}
           />
         </h2>
 
@@ -727,7 +728,8 @@ const Production = () => {
               background: "#28a745",
               color: "white",
               border: "none",
-              borderRadius: "4px"
+              borderRadius: "4px",
+              cursor: "pointer"
             }}
           >
             Save Production Data
