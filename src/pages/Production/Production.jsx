@@ -133,6 +133,28 @@ const Production = () => {
     const dateStr = `${String(dateObj.getDate()).padStart(2, "0")}-${String(dateObj.getMonth() + 1).padStart(2, "0")}-${year}`;
 
     const entries = [];
+    const calculateTotalTargetMeter = () => {
+      const avgRPM = parseFloat(avgTotalRPM);
+      const avgPick = parseFloat(avgTotalPick);
+      
+      // Use the actual Average Factory Efficiency 
+      // (avgDayEff + avgNightEff) / 2
+      const factoryEff = (parseFloat(avgDayEff) + parseFloat(avgNightEff)) / 2;
+      const effDecimal = factoryEff / 100;
+    
+      // Use the actual number of machines in your state
+      const totalMachines = machines.length;
+    
+      if (avgRPM <= 0 || avgPick <= 0 || factoryEff <= 0) return 0;
+    
+      // Formula: (RPM * Dynamic_Eff * 24 * 60 * Machine_Count) / (39.37 * Pick)
+      const target = (avgRPM * effDecimal * 24 * 60 * totalMachines) / (39.37 * avgPick);
+      return target;
+    };
+
+    const totalTargetMeter = calculateTotalTargetMeter();
+    const machineStopLoss = totalProdMeter - totalTargetMeter;
+    console.log(machineStopLoss);
 
     for (let i = 0; i < 4; i++) {
       const machineBlock = machines.slice(i * 4, i * 4 + 4);
@@ -175,7 +197,9 @@ const Production = () => {
               main_meter: footerMeters.mainMeter,
               total_day_lost_meter: totalDayLost,
               total_night_lost_meter: totalNightLost,
-              total_lost_meter: grandTotalLost
+              total_lost_meter: grandTotalLost,
+              target_production_meter: totalTargetMeter.toFixed(2),
+              machine_stop_loss_meter: machineStopLoss.toFixed(2)
             },
             operator_data: entries
           }
