@@ -154,7 +154,6 @@ const Production = () => {
 
     const totalTargetMeter = calculateTotalTargetMeter();
     const machineStopLoss = totalProdMeter - totalTargetMeter;
-    console.log(machineStopLoss);
 
     for (let i = 0; i < 4; i++) {
       const machineBlock = machines.slice(i * 4, i * 4 + 4);
@@ -195,11 +194,12 @@ const Production = () => {
               total_average_night_efficiency: avgNightEff,
               compressor_meter: footerMeters.compressorMeter,
               main_meter: footerMeters.mainMeter,
+              total_pick: totalProdMeter*avgTotalPick,
               total_day_lost_meter: totalDayLost,
               total_night_lost_meter: totalNightLost,
               total_lost_meter: grandTotalLost,
               target_production_meter: totalTargetMeter.toFixed(2),
-              machine_stop_loss_meter: Number(machineStopLoss.toFixed(2))+Number(grandTotalLost),
+              machine_stop_loss_meter: Number(machineStopLoss.toFixed(2))-Number(grandTotalLost),
             },
             operator_data: entries
           }

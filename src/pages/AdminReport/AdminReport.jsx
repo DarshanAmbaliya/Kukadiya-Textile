@@ -79,9 +79,9 @@ const AdminReport = () => {
           const avgPick = parseFloat(summary.total_average_pick || 0);
           const totalProduction = Number(summary.total_production_meter || 0);
 
-          // Pick Charge Logic
-          const pickCharge = (avgPick > 0 && totalProduction > 0)
-            ? (58340 / (avgPick * totalProduction)).toFixed(2)
+          // Pick Charge Logic)(18L)30days-lightbill
+          const pickChargeFixedCost = (avgPick > 0 && totalProduction > 0)
+            ? (41666 / (avgPick * totalProduction)).toFixed(3)
             : 0;
 
           return {
@@ -95,7 +95,9 @@ const AdminReport = () => {
             total_machine_stop_loss_meter: Number(summary.machine_stop_loss_meter || 0),
             total_lost_meter: Number(summary.total_lost_meter || 0),
             total_production_meter: totalProduction,
-            pick_charge: Number(pickCharge),
+            total_pick: summary.total_pick,
+            pick_charge_per_unit: (summary.total_pick && ((Number(avgMainUsed || 0) / summary.total_pick) * 7.9).toFixed(4)),
+            pick_charge: (Number(pickChargeFixedCost) + Number(summary.total_pick && ((Number(avgMainUsed || 0) / summary.total_pick) * 7.9))).toFixed(3),
           };
         });
 
@@ -218,6 +220,14 @@ const AdminReport = () => {
     (sum, r) => sum + Number(r.total_machine_stop_loss_meter || 0),
     0
   );
+
+  const avgPickChargePerUnit =
+    count > 0
+      ? (
+        filteredData.reduce((sum, r) => sum + Number(r.pick_charge_per_unit || 0), 0) /
+        count
+      ).toFixed(4)
+      : 0;
 
   const handlePrint = () => {
     window.print();
@@ -388,6 +398,7 @@ const AdminReport = () => {
                   <th>Total Machine Loss Meter</th>
                   <th>Total Loss Meter</th>
                   <th>Total Production Meter</th>
+                  <th>Pick Charge Per Unit</th>
                   <th>Pick Charge</th>
                 </tr>
               </thead>
@@ -413,6 +424,7 @@ const AdminReport = () => {
                         {formatWithSign(row.total_lost_meter)}
                       </td>
                       <td>{row.total_production_meter}</td>
+                      <td>{row.pick_charge_per_unit}</td>
                       <td>{row.pick_charge}</td>
                     </tr>
                   ))
@@ -444,7 +456,8 @@ const AdminReport = () => {
                     color: totalLostMeter > 0 ? "#2e7d32" : totalLostMeter < 0 ? "red" : "black"
                   }}>{formatWithSign(totalLostMeter)}</td>
                   <td>{totalProduction}</td>
-                  <td>{avgPickCharge}</td>
+                  <td>{avgPickChargePerUnit}</td>
+                  <td>{(avgPickCharge)}</td>
                 </tr>
               </tfoot>
             </table>
