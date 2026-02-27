@@ -199,7 +199,7 @@ const Production = () => {
               total_night_lost_meter: totalNightLost,
               total_lost_meter: grandTotalLost,
               target_production_meter: totalTargetMeter.toFixed(2),
-              machine_stop_loss_meter: machineStopLoss.toFixed(2)
+              machine_stop_loss_meter: machineStopLoss.toFixed(2)+grandTotalLost,
             },
             operator_data: entries
           }
