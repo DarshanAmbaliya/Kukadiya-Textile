@@ -5,6 +5,7 @@ const connectDB = require('./config/db');
 const employeeRoutes = require('./routes/employeeRoutes');
 const fabricRoutes = require("./routes/fabricRoutes");
 const productionRoutes = require("./routes/productionRoutes.js")
+const yarnRoutes = require("./routes/yarnRoutes");
 
 dotenv.config();
 
@@ -27,8 +28,9 @@ app.use(express.json());
 app.use('/api/employees', employeeRoutes);
 app.use("/api/fabrics", fabricRoutes);
 app.use("/api/production", productionRoutes);
+app.use("/api/yarns", yarnRoutes);
 
-// Health Check
+// api status Check
 app.get('/', (req, res) => {
   res.send('🚀 Mahakali Textiles API is running!');
 });

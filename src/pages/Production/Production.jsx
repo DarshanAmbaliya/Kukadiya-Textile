@@ -8,6 +8,8 @@ const Production = () => {
     compressorMeter: "",
     mainMeter: ""
   });
+  const [yarnList, setYarnList] = useState([]); // All available yarns from DB
+  const [selectedYarns, setSelectedYarns] = useState([{ yarn_name: "", quantity: "" }]);
 
   /**
  * FIXED API URL LOGIC
@@ -54,7 +56,16 @@ const Production = () => {
         console.error(err);
       }
     };
+    const fetchYarn = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/yarns`);
+        setYarnList(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
     fetchFabrics();
+    fetchYarn();
   }, []);
 
   // Totals and averages
@@ -136,17 +147,17 @@ const Production = () => {
     const calculateTotalTargetMeter = () => {
       const avgRPM = parseFloat(avgTotalRPM);
       const avgPick = parseFloat(avgTotalPick);
-      
+
       // Use the actual Average Factory Efficiency 
       // (avgDayEff + avgNightEff) / 2
       const factoryEff = (parseFloat(avgDayEff) + parseFloat(avgNightEff)) / 2;
       const effDecimal = factoryEff / 100;
-    
+
       // Use the actual number of machines in your state
       const totalMachines = machines.length;
-    
+
       if (avgRPM <= 0 || avgPick <= 0 || factoryEff <= 0) return 0;
-    
+
       // Formula: (RPM * Dynamic_Eff * 24 * 60 * Machine_Count) / (39.37 * Pick)
       const target = (avgRPM * effDecimal * 24 * 60 * totalMachines) / (39.37 * avgPick);
       return target;
@@ -194,19 +205,20 @@ const Production = () => {
               total_average_night_efficiency: avgNightEff,
               compressor_meter: footerMeters.compressorMeter,
               main_meter: footerMeters.mainMeter,
-              total_pick: totalProdMeter*avgTotalPick,
+              total_pick: totalProdMeter * avgTotalPick,
               total_day_lost_meter: totalDayLost,
               total_night_lost_meter: totalNightLost,
               total_lost_meter: grandTotalLost,
               target_production_meter: totalTargetMeter.toFixed(2),
-              machine_stop_loss_meter: Number(machineStopLoss.toFixed(2))-Number(grandTotalLost),
+              machine_stop_loss_meter: Number(machineStopLoss.toFixed(2)) - Number(grandTotalLost),
+              yarn: selectedYarns.filter(y => y.yarn_name !== "" && y.quantity !== "")
             },
             operator_data: entries
           }
         }
       }
     });
-  }, [machines, operators, selectedDate, footerMeters]);
+  }, [machines, operators, selectedDate, footerMeters, selectedYarns]);
 
   // Input change handlers
   const handleInputChange = (index, field, value) => {
@@ -251,6 +263,11 @@ const Production = () => {
             mainMeter: existing.summary?.main_meter || "",
             compressorMeter: existing.summary?.compressor_meter || ""
           });
+          if (existing.summary?.yarn && existing.summary.yarn.length > 0) {
+            setSelectedYarns(existing.summary.yarn);
+          } else {
+            setSelectedYarns([{ yarn_name: "", quantity: "" }]);
+          }
           // setAvgTotalRPM(existing.summary?.total_average_rpm || "0.00");
           const opData = existing.operator_data;
 
@@ -388,6 +405,31 @@ const Production = () => {
     return num !== 0 && num <= 3000;
   };
 
+  useEffect(() => {
+    const fetchYarns = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/yarns`); // Assuming this is your endpoint
+        setYarnList(res.data);
+      } catch (err) {
+        console.error("Error fetching yarns:", err);
+      }
+    };
+    fetchYarns();
+  }, []);
+  const handleYarnChange = (index, field, value) => {
+    const updated = [...selectedYarns];
+    updated[index][field] = value;
+    setSelectedYarns(updated);
+  };
+
+  const addYarnRow = () => {
+    setSelectedYarns([...selectedYarns, { yarn_name: "", quantity: "" }]);
+  };
+
+  const removeYarnRow = (index) => {
+    setSelectedYarns(selectedYarns.filter((_, i) => i !== index));
+  };
+
   return (
     <section className="Production-table" style={{ padding: "20px" }}>
       <div className="container">
@@ -397,7 +439,7 @@ const Production = () => {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            style={{cursor: 'pointer'}}
+            style={{ cursor: 'pointer' }}
           />
         </h2>
 
@@ -718,6 +760,62 @@ const Production = () => {
             </tr>
           </tfoot>
         </table>
+
+        {/* YARN SELECTION TABLE */}
+        <div style={{ marginTop: "30px" }}>
+          <h3 style={{ textAlign: "center" }}>Yarn Consumption</h3>
+          <table border="1" style={{ width: "50%", margin: "0 auto", borderCollapse: "collapse", textAlign: "center" }}>
+            <thead style={{ backgroundColor: "#f2f2f2" }}>
+              <tr>
+                <th>Yarn Name</th>
+                <th>Quantity (Bags/Kgs)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedYarns.map((y, idx) => (
+                <tr key={idx}>
+                  <td>
+                    <select
+                      value={y.yarn_name}
+                      onChange={(e) => handleYarnChange(idx, "yarn_name", e.target.value)}
+                      style={{ width: "90%" }}
+                    >
+                      <option value="">Select Yarn</option>
+                      {yarnList.map((item) => (
+                        <option key={item._id} value={item.yarn_name}>
+                          {item.yarn_name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      value={y.quantity}
+                      onChange={(e) => handleYarnChange(idx, "quantity", e.target.value)}
+                      placeholder="Qty"
+                      style={{ width: "80px" }}
+                    />
+                  </td>
+                  <td>
+                    <button
+                      onClick={() => removeYarnRow(idx)}
+                      style={{ color: "red", border: "none", background: "none", cursor: "pointer",border:"1px solid",padding:"0px 3px" }}
+                    >
+                      ✖
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ textAlign: "center", marginTop: "10px" }}>
+            <button onClick={addYarnRow} style={{ padding: "5px 15px", cursor: "pointer" }}>
+              + Add Yarn
+            </button>
+          </div>
+        </div>
 
         <div style={{ marginTop: "30px", textAlign: "center" }}>
           <button

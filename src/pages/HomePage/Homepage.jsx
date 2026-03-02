@@ -12,7 +12,7 @@ const Homepage = ({ currentUser }) => {
         justifyContent: "center",
         flexWrap: "wrap"
       }}>
-        
+
         {/* Common Links */}
         <li>
           <NavLink
@@ -52,18 +52,17 @@ const Homepage = ({ currentUser }) => {
                 Production Report
               </NavLink>
             </li>
-
-            <li>
-              <NavLink
-                to="/adminreport"
-                style={navStyle("#f44336")}
-              >
-                Admin Report
-              </NavLink>
-            </li>
           </>
         )}
 
+        <li>
+          <NavLink
+            to="/adminreport"
+            style={navStyle("#f44336")}
+          >
+            Admin Report
+          </NavLink>
+        </li>
       </ul>
     </>
   );
