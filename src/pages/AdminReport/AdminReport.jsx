@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const AdminReport = () => {
+const AdminReport = ({ currentUser }) => {
+  const isAdmin = currentUser?.role === "admin";
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, "0");
@@ -20,7 +21,6 @@ const AdminReport = () => {
 
   const API_URL = `${API_BASE_URL}/api/production/`;
 
-  /* -------------------- HELPER: CALCULATE METER USAGE -------------------- */
   /* -------------------- HELPER: CALCULATE METER USAGE -------------------- */
   const calculateMeterUsage = (rows) => {
     return rows.map((current, index) => {
@@ -128,7 +128,7 @@ const AdminReport = () => {
           total_production_meter: totalProduction,
           total_pick: totalPick,
           pick_charge_per_unit: pickChargePerUnit.toFixed(4),
-          pick_charge: (Number(pickChargeFixedCost) + Number(pickChargePerUnit)).toFixed(3),
+          pick_charge: (Number(pickChargeFixedCost) + Number(pickChargePerUnit)).toFixed(4),
         };
       });
 
@@ -193,12 +193,14 @@ const AdminReport = () => {
       0
     );
 
+  const avgProduction = count > 0 ? (totalProduction / count).toFixed(2) : 0;
+
   const avgPickCharge =
     count > 0
       ? (
         filteredData.reduce((sum, r) => sum + Number(r.pick_charge || 0), 0) /
         count
-      ).toFixed(2)
+      ).toFixed(4)
       : 0;
 
   const totalMainUsed =
@@ -231,10 +233,15 @@ const AdminReport = () => {
     return "0.00";
   };
 
+  const avgLostMeter = count > 0 ? (totalLostMeter / count).toFixed(2) : 0;
+
   const totalMachineStopLoss = filteredData.reduce(
     (sum, r) => sum + Number(r.total_machine_stop_loss_meter || 0),
     0
   );
+
+  const avgMachineStopLoss =
+    count > 0 ? (totalMachineStopLoss / count).toFixed(2) : 0;
 
   const avgPickChargePerUnit =
     count > 0
@@ -248,6 +255,11 @@ const AdminReport = () => {
     (sum, r) => sum + Number(r.total_pick || 0),
     0
   );
+
+  const avgTotalPick =
+    count > 0
+      ? (totalPick / count).toFixed(2)
+      : 0;
 
   const handlePrint = () => {
     window.print();
@@ -267,9 +279,11 @@ const AdminReport = () => {
               size: portrait;
               margin: 8mm; /* Smaller margins to give more space to the table */
             }
+            .production-report-section .filter-controls {display: none !important;}
             .title {
               display: block !important;
               border: 0 !important;
+              margin: 0 !important;
             }
             body {
               -webkit-print-color-adjust: exact;
@@ -287,10 +301,11 @@ const AdminReport = () => {
               border-bottom: 1px solid #000;
               padding-bottom: 5px;
             }
+            .title p {font-size: 16px; text-transform: none;}
             table {
               width: 100% !important;
               border-collapse: collapse !important;
-              table-layout: auto; /* Allow columns to shrink to content */
+              table-layout: auto; /* Allow columns to shrink to content */,
             }
             th, td {
               border: 0.5pt solid #000 !important; /* Thinner lines look cleaner in Portrait */
@@ -310,8 +325,14 @@ const AdminReport = () => {
       </style>
       <div className="container">
         <div className="row">
-          <h2 className="title" style={{ textAlign: "center", marginBottom: "20px" }}>
+          <h2 className="title" style={{ textAlign: "center", margin: "0" }}>
             Mahakali Textiles - {monthNames[parseInt(month) - 1]} {year}
+            <br />
+            <p>
+              {startDate && endDate
+                ? `${startDate.split("-").reverse().join("-")} to ${endDate.split("-").reverse().join("-")}`
+                : ""}
+            </p>
           </h2>
           <h2 className="subtitle">Admin Production Report
             <button
@@ -385,7 +406,7 @@ const AdminReport = () => {
 
             {/* Clear Filters */}
             {(startDate || endDate) && (
-              <button
+              <button style={{ cursor: 'pointer' }}
                 onClick={() => {
                   setStartDate("");
                   setEndDate("");
@@ -415,12 +436,18 @@ const AdminReport = () => {
                   <th>Avg Pick</th>
                   <th>Compressor Meter</th>
                   <th>Main Meter</th>
-                  <th>Total Machine Loss Meter</th>
+                  <th>Total Machine stop Loss Meter</th>
                   <th>Total Loss Meter</th>
                   <th>Total Production Meter</th>
-                  <th>Total Pick</th>
-                  <th>Pick Charge Per Unit</th>
-                  <th>Pick Charge</th>
+                  {
+                    isAdmin && (
+                      <>
+                        <th>Total Pick</th>
+                        <th>Pick Charge Per Unit</th>
+                        <th>Pick Charge</th>
+                      </>
+                    )
+                  }
                 </tr>
               </thead>
 
@@ -445,14 +472,18 @@ const AdminReport = () => {
                         {formatWithSign(row.total_lost_meter)}
                       </td>
                       <td>{row.total_production_meter}</td>
-                      <td>{(row.total_pick).toFixed(2)}</td>
-                      <td>{row.pick_charge_per_unit}</td>
-                      <td>{row.pick_charge}</td>
+                      {isAdmin && (
+                        <>
+                          <td>{(row.total_pick).toFixed(2)}</td>
+                          <td>{row.pick_charge_per_unit}</td>
+                          <td>{row.pick_charge}</td>
+                        </>
+                      )}
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="8">No data found for selected range.</td>
+                    <td colSpan='12'>No data found for selected range.</td>
                   </tr>
                 )}
               </tbody>
@@ -472,15 +503,23 @@ const AdminReport = () => {
                   <td style={{
                     color: totalMachineStopLoss > 0 ? "#2e7d32" : totalMachineStopLoss < 0 ? "red" : "black"
                   }}>
-                    {formatWithSign(totalMachineStopLoss)}
+                    AVG: {avgMachineStopLoss} <br />TOTAL: {formatWithSign(totalMachineStopLoss)}
                   </td>
                   <td style={{
                     color: totalLostMeter > 0 ? "#2e7d32" : totalLostMeter < 0 ? "red" : "black"
-                  }}>{formatWithSign(totalLostMeter)}</td>
-                  <td>{totalProduction}</td>
-                  <td>{totalPick}</td>
-                  <td>{avgPickChargePerUnit}</td>
-                  <td>{avgPickCharge}</td>
+                  }}>
+                    AVG: {avgLostMeter} <br />TOTAL: {formatWithSign(totalLostMeter)}
+                  </td>
+                  <td>
+                    AVG: {avgProduction} <br />TOTAL: {totalProduction}
+                  </td>
+                  {currentUser?.role == "admin" && (
+                    <>
+                      <td>AVG: {avgTotalPick} <br />TOTAL: {totalPick}</td>
+                      <td>{avgPickChargePerUnit}</td>
+                      <td>{avgPickCharge}</td>
+                    </>
+                  )}
                 </tr>
               </tfoot>
             </table>

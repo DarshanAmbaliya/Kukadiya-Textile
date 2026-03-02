@@ -17,20 +17,20 @@ const API_BASE_URL = window.location.hostname === "localhost"
 
 const API_URL = `${API_BASE_URL}/api/employees`;
 
-// ✅ Month names declared at top
+// Month names declared at top
 const monthNames = [
   "january", "february", "march", "april", "may", "june",
   "july", "august", "september", "october", "november", "december"
 ];
 
-// ✅ Get current date automatically
+// Get current date automatically
 const today = new Date();
 const currentYear = today.getFullYear();
 const currentMonthIdx = today.getMonth();
 
 export default function AttendancePage({ currentUser }) {
   const isAdmin = currentUser?.role === 'admin';
-  // ✅ Default now uses current month & year
+  // Default now uses current month & year
   const [displayDate, setDisplayDate] = useState({
     year: currentYear,
     monthName:
@@ -307,7 +307,7 @@ export default function AttendancePage({ currentUser }) {
           <thead>
             <tr>
               <th className="sticky-col">Employee Name</th>
-              <th>Rate</th>
+              {isAdmin && <th>Rate</th>}
               {Array.from({ length: days }, (_, i) => <th key={i}>{i + 1}</th>)}
               <th style={{ color: "#2ecc71" }}>P</th>
               <th style={{ color: "#e74c3c" }}>A</th>
@@ -329,6 +329,7 @@ export default function AttendancePage({ currentUser }) {
                       style={{ border: 'none', background: 'transparent', fontWeight: 'bold', width: '100%' }}
                     />
                   </td>
+                  {isAdmin && 
                   <td>
                     <input
                       type="number"
@@ -336,7 +337,7 @@ export default function AttendancePage({ currentUser }) {
                       value={emp.dailySalary}
                       onChange={e => updateField(emp._id || emp.id, 'dailySalary', Number(e.target.value))}
                     />
-                  </td>
+                  </td>}
                   {emp.attendance.map((v, i) => (
                     <td key={i} className={`att-cell ${v === "P" ? "p-bg" : v === "A" ? "a-bg" : ""}`}>
                       <select value={v} onChange={e => {
