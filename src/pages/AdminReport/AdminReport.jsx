@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { NavLink } from "react-router-dom";
 
 const AdminReport = ({ currentUser }) => {
   const isAdmin = currentUser?.role === "admin";
@@ -455,7 +456,11 @@ const AdminReport = ({ currentUser }) => {
                 {filteredData.length > 0 ? (
                   filteredData.map((row) => (
                     <tr key={row.date}>
-                      <td>{row.date}</td>
+                      <td>
+                        <NavLink to={`/production/${row.date.split('-').reverse().join('-')}`}>
+                          {row.date}
+                        </NavLink>
+                      </td>
                       <td>{row.avg_rpm}</td>
                       <td>{row.avg_efficiency}</td>
                       <td>{row.avg_pick}</td>

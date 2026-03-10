@@ -1,9 +1,11 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 const Production = () => {
+  const { date } = useParams();
   const [fabricQuality, setfebricQuality] = useState([]);
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState(date || "");
   const [footerMeters, setFooterMeters] = useState({
     compressorMeter: "",
     mainMeter: ""
@@ -326,6 +328,7 @@ const Production = () => {
 
   useEffect(() => {
     const loadLatestDate = async () => {
+      if (date) return;
       try {
         const year = new Date().getFullYear();
         const res = await axios.get(`${API_URL}/api/production/${year}`);
@@ -361,7 +364,7 @@ const Production = () => {
     };
 
     loadLatestDate();
-  }, []);
+  }, [date]);
 
   const calculateLostMeter = (rpm, efficiency, pick, actualMeter) => {
     const r = Number(rpm);
@@ -764,7 +767,7 @@ const Production = () => {
         {/* YARN SELECTION TABLE */}
         <div style={{ marginTop: "30px" }}>
           <h3 style={{ textAlign: "center" }}>Yarn Consumption</h3>
-          <table border="1" style={{ width: "50%", margin: "0 auto", borderCollapse: "collapse", textAlign: "center" }}>
+          <table border="1" style={{ margin: "0 auto", borderCollapse: "collapse", textAlign: "center" }} className="yarn-table">
             <thead style={{ backgroundColor: "#f2f2f2" }}>
               <tr>
                 <th>Yarn Name</th>

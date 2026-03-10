@@ -143,6 +143,7 @@ function App() {
         <Route path='/' element={<Homepage currentUser={currentUser} />} />
         <Route path='/attendance' element={<AttendancePage currentUser={currentUser} />} />
         <Route path='/production' element={<Production />} />
+        <Route path="/production/:date?" element={<Production />} />
         <Route path='/fabric' element={<Fabricquality />} />
         <Route path='/yarn' element={<YarnQuality />} />
         <Route path='/attendancerecord' element={currentUser.role === 'admin' ? <AttendanceRecord /> : <Navigate to="/" />} />

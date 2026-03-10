@@ -26,7 +26,11 @@ $white: #ffffff;
     justify-content: space-between;
     align-items: center;
   }
-  .title {display: none;}
+
+  .title {
+    display: none;
+  }
+
   // Input styling
   .filter-controls {
     display: flex;
@@ -143,7 +147,20 @@ $white: #ffffff;
               left: 0;
               z-index: 10;
               background-color: white;
-              min-width: min-content;
+              min-width: 75px;
+
+              a {
+                text-decoration: none;
+                color: #2c3e50;
+                font-weight: bold;
+              }
+
+              &:hover {
+                a {
+                  text-decoration: underline;
+                  color: #3498db;
+                }
+              }
             }
           }
 
@@ -199,6 +216,12 @@ $white: #ffffff;
   }
 }
 
+.Production-table {
+  .yarn-table {
+    width: 50%;
+  }
+}
+
 @media (max-width: 991px) {
   .production-report-section {
     .filter-controls {
@@ -219,6 +242,12 @@ $white: #ffffff;
           width: 100%;
         }
       }
+    }
+  }
+
+  .Production-table {
+    .yarn-table {
+      width: 100%;
     }
   }
 }
