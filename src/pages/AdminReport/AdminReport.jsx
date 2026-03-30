@@ -119,8 +119,22 @@ const AdminReport = ({ currentUser }) => {
         return {
           date: row.date,
           avg_rpm: current.total_average_rpm || 0,
-          avg_efficiency: Number(((parseFloat(current.total_average_day_efficiency || 0) +
-            parseFloat(current.total_average_night_efficiency || 0)) / 2).toFixed(2)),
+          avg_efficiency: (() => {
+            const day = parseFloat(current.total_average_day_efficiency) || 0;
+            const night = parseFloat(current.total_average_night_efficiency) || 0;
+
+            let avg = 0;
+
+            if (day > 0 && night > 0) {
+              avg = (day + night) / 2;
+            } else if (day > 0) {
+              avg = day;
+            } else if (night > 0) {
+              avg = night;
+            }
+
+            return Number(avg.toFixed(2));
+          })(),
           avg_pick: avgPick,
           main_meter_used: row.mainUsed,
           compressor_meter_used: row.compUsed,
