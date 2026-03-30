@@ -723,9 +723,19 @@ const Production = () => {
                 />
               </td>
               <td colSpan="2">
-                Average Effciency: <br /> <hr />{(
-                  (parseFloat(avgDayEff) + parseFloat(avgNightEff)) / 2
-                ).toFixed(2)}%
+                Average Effciency: <br /> <hr />
+                {(() => {
+                  const day = parseFloat(avgDayEff) || 0;
+                  const night = parseFloat(avgNightEff) || 0;
+
+                  return day > 0 && night > 0
+                    ? ((day + night) / 2).toFixed(2)
+                    : day > 0
+                      ? day.toFixed(2)
+                      : night > 0
+                        ? night.toFixed(2)
+                        : "0.00";
+                })()}%
               </td>
               <td colSpan="1" style={{ textAlign: "right" }}>
                 Compressor Meter :
@@ -804,7 +814,7 @@ const Production = () => {
                   <td>
                     <button
                       onClick={() => removeYarnRow(idx)}
-                      style={{ color: "red", border: "none", background: "none", cursor: "pointer",border:"1px solid",padding:"0px 3px" }}
+                      style={{ color: "red", border: "none", background: "none", cursor: "pointer", border: "1px solid", padding: "0px 3px" }}
                     >
                       ✖
                     </button>
