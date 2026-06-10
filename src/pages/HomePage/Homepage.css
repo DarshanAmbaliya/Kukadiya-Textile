@@ -1,0 +1,195 @@
+.main-banner-section .container .row .main-box {
+  position: relative;
+  background-image: url(https://templates.sparklethings.com/looma/wp-content/uploads/sites/167/2025/11/Image-LYFSQMX-1024x683.jpg);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 1;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  padding: 120px 15px;
+  background-attachment: fixed;
+}
+.main-banner-section .container .row .main-box::before {
+  position: absolute;
+  content: "";
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(270deg, rgba(11, 43, 63, 0) 42%, rgba(11, 43, 63, 0.6) 58.6%, #0B2B3F 100%);
+  background-blend-mode: darken;
+  background: rgba(11, 43, 63, 0.4352941176);
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+.main-banner-section .container .row .main-box .box .content h2 {
+  color: white;
+  font-size: 52px;
+  line-height: 1.4;
+  margin: 0;
+  padding: 15px 0;
+}
+.main-banner-section .container .row .main-box .box .content p {
+  color: white;
+  font-size: 16px;
+  line-height: 1.8;
+  margin: 0;
+}
+.main-banner-section .container .row .main-box .box .content .primary-btn {
+  padding-top: 25px;
+}
+
+.banner-box-section .container .row .main-box {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 2fr;
+  gap: 15px;
+}
+.banner-box-section .container .row .main-box .box {
+  padding: 15px 0;
+}
+.banner-box-section .container .row .main-box .box .content {
+  padding: 30px;
+  height: -webkit-fill-available;
+  border-radius: 8px;
+}
+.banner-box-section .container .row .main-box .box .content .detail {
+  padding-top: 15px;
+}
+.banner-box-section .container .row .main-box .box .content .detail h2 {
+  font-size: 64px;
+  margin: 0;
+  padding-bottom: 15px;
+  color: white;
+}
+.banner-box-section .container .row .main-box .box .content .detail h3 {
+  font-size: 20px;
+  margin: 0;
+  color: white;
+  padding: 15px 0;
+}
+.banner-box-section .container .row .main-box .box .content .detail p {
+  margin: 0;
+  font-size: 16px;
+  color: white;
+  line-height: 1.5;
+}
+.banner-box-section .container .row .main-box .box .content:hover .image::before {
+  border-radius: 0;
+  transform: rotate(0) scale(1);
+}
+.banner-box-section .container .row .main-box .box:nth-child(1) .content {
+  background-image: url(https://demo2.wpopal.com/extice/wp-content/uploads/2025/07/blog_2.jpg);
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: darken;
+  background-color: rgba(11, 43, 63, 0.457);
+}
+.banner-box-section .container .row .main-box .box:nth-child(1) .content .image {
+  position: relative;
+  background: #fbe87e;
+  border-radius: 12px;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.banner-box-section .container .row .main-box .box:nth-child(1) .content .image::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: white;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  transform: rotate(180deg) scale(0);
+  transition: all 0.4s ease-in-out;
+  z-index: 0;
+}
+.banner-box-section .container .row .main-box .box:nth-child(1) .content .image img {
+  position: relative;
+  z-index: 2;
+}
+.banner-box-section .container .row .main-box .box:nth-child(2) .content {
+  background-color: #0b2b3f;
+  align-content: center;
+}
+.banner-box-section .container .row .main-box .box:nth-child(2) .content .detail {
+  text-align: center;
+}
+.banner-box-section .container .row .main-box .box:nth-child(3) .content {
+  background-color: white;
+  align-content: center;
+  text-align: center;
+}
+.banner-box-section .container .row .main-box .box:nth-child(3) .content h2,
+.banner-box-section .container .row .main-box .box:nth-child(3) .content p {
+  color: #0b2b3f;
+}
+.banner-box-section .container .row .main-box .box:nth-child(4) .content {
+  background-color: #fbe87e;
+}
+.banner-box-section .container .row .main-box .box:nth-child(4) .content .detail {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0;
+}
+.banner-box-section .container .row .main-box .box:nth-child(4) .content .detail .top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.banner-box-section .container .row .main-box .box:nth-child(4) .content .detail .top h3 {
+  color: #0B2B3F;
+  line-height: 1.5;
+  max-width: 280px;
+}
+.banner-box-section .container .row .main-box .box:nth-child(4) .content .detail .bottom ul {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+}
+.banner-box-section .container .row .main-box .box:nth-child(4) .content .detail .bottom ul::after {
+  position: absolute;
+  content: "";
+  height: 100%;
+  width: 2px;
+  background: rgba(11, 43, 63, 0.1019607843);
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+}
+.banner-box-section .container .row .main-box .box:nth-child(4) .content .detail .bottom ul li {
+  list-style-type: none;
+}
+.banner-box-section .container .row .main-box .box:nth-child(4) .content .detail .bottom ul li:last-child {
+  text-align: end;
+}
+.banner-box-section .container .row .main-box .box:nth-child(4) .content .detail .bottom ul li span {
+  display: block;
+  font-size: 16px;
+  padding-bottom: 10px;
+  color: #0b2b3f;
+}
+.banner-box-section .container .row .main-box .box:nth-child(4) .content .detail .bottom ul li a {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.4s ease-in-out;
+  color: black;
+  padding-bottom: 2px;
+}
+.banner-box-section .container .row .main-box .box:nth-child(4) .content .detail .bottom ul li a:hover {
+  color: #02283f;
+}/*# sourceMappingURL=Homepage.css.map */
