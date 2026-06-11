@@ -45,7 +45,7 @@ function App() {
     if (savedUser) {
       const parsedData = JSON.parse(savedUser);
       const today = new Date().toLocaleDateString();
-  
+
       if (parsedData.loginDate === today) {
         setCurrentUser(parsedData);
       } else {
@@ -125,7 +125,7 @@ function App() {
   };
   const ProtectedRoute = ({ currentUser, loading, children }) => {
     if (loading) return null; // or loader
-  
+
     if (!currentUser) {
       return <Navigate to="/" />;
     }
@@ -137,29 +137,104 @@ function App() {
       <Header currentUser={currentUser} onLoginClick={() => setShowLogin(true)} onLogout={handleLogout} />
 
       {showLogin && !currentUser && (
-        <div style={{ textAlign: 'center', marginTop: '100px' }}>
-          <div style={{ display: 'inline-block', padding: '30px', border: '1px solid #ddd', borderRadius: '10px' }}>
-            <h2>System Login</h2>
-            <form onSubmit={handleLogin}>
-              <input
-                type="text"
-                placeholder="Username"
-                onChange={e => setCredentials({ ...credentials, username: e.target.value })}
-                required
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                onChange={e => setCredentials({ ...credentials, password: e.target.value })}
-                required
-              />
-              <button type="submit">Login</button>
-            </form>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-          </div>
-        </div>
+        <>
+          <section className='login-form-section'>
+            <div className="close-login-form" onClick={() => setShowLogin(false)}>
+              x
+            </div>
+            <div className="container">
+              <div className="row">
+                <div className="main-box">
+                  <div className="box">
+                    <div className="content">
+                      <h2>Mahakali Textile</h2>
+                      <h3>Login Form</h3>
+                      <form onSubmit={handleLogin}>
+                        <div className="input-box">
+                          <label>Username</label>
+                          <input
+                            type="text"
+                            placeholder="Username"
+                            onChange={e => setCredentials({ ...credentials, username: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="input-box">
+                          <label>Password</label>
+                          <input
+                            type="password"
+                            placeholder="Password"
+                            onChange={e => setCredentials({ ...credentials, password: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <button type="submit">Login</button>
+                      </form>
+                      {error && <p style={{ color: "#ffe400" }}>{error}</p>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </>
       )}
 
+      {
+        currentUser && (
+          <section className='admin-button-section'>
+            <div className="container">
+              <div className="row">
+                <ul style={{
+                  listStyle: "none",
+                  padding: 0,
+                  display: "flex",
+                  gap: "10px",
+                  justifyContent: "center",
+                  flexWrap: "wrap"
+                }}>
+
+                  {/* Common Links */}
+                  <li>
+                    <NavLink to="/attendance" style={navStyle("#4CAF50")}>
+                      Daily Attendance
+                    </NavLink>
+                  </li>
+
+                  <li>
+                    <NavLink to="/production" style={navStyle("#2196F3")}>
+                      Daily Production
+                    </NavLink>
+                  </li>
+
+                  {/* Admin Only Links */}
+                  {currentUser.role === "admin" && (
+                    <>
+                      <li>
+                        <NavLink to="/attendancerecord" style={navStyle("#ff9800")}>
+                          Attendance Record
+                        </NavLink>
+                      </li>
+
+                      <li>
+                        <NavLink to="/productionreport" style={navStyle("#9c27b0")}>
+                          Production Report
+                        </NavLink>
+                      </li>
+                    </>
+                  )}
+
+                  <li>
+                    <NavLink to="/adminreport" style={navStyle("#f44336")}>
+                      Admin Report
+                    </NavLink>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+        )
+      }
       <Routes>
         {/* Public Route */}
         <Route path='/' element={<Homepage currentUser={currentUser} />} />
@@ -217,5 +292,15 @@ function App() {
     </div>
   );
 }
-
+const navStyle = (bgColor) => ({
+  display: "inline-block",
+  padding: "10px 18px",
+  backgroundColor: bgColor,
+  color: "#fff",
+  textDecoration: "none",
+  borderRadius: "6px",
+  fontSize: "16px",
+  fontWeight: "bold",
+  transition: "0.3s"
+});
 export default App;

@@ -1,3 +1,10 @@
+.Production-table table {
+  border: 1px solid;
+}
+.Production-table table tr, .Production-table table td, .Production-table table th {
+  border: 1px solid;
+}
+
 .production-report-section {
   background-color: #f8f9fa;
   font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;

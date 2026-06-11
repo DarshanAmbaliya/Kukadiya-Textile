@@ -6,6 +6,16 @@ $border-color: #dee2e6;
 $text-dark: #333;
 $white: #ffffff;
 
+.Production-table{
+  table {
+    border: 1px solid;
+
+    tr,td,th {
+      border: 1px solid;
+    }
+  }
+}
+
 .production-report-section {
   background-color: $bg-light;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
