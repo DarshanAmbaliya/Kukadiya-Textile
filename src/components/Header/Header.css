@@ -1,0 +1,56 @@
+header {
+  padding: 25px 15px;
+}
+header .container {
+  padding: 0;
+}
+header .container .row .main-nav {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 12px;
+}
+header .container .row .main-nav .logo {
+  height: auto;
+  width: 20%;
+}
+header .container .row .main-nav .logo a {
+  display: block;
+  width: 100%;
+}
+header .container .row .main-nav .logo a img {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+  height: 90px;
+  width: auto;
+}
+header .container .row .main-nav .menubar {
+  width: 60%;
+}
+header .container .row .main-nav .menubar ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+header .container .row .main-nav .menubar ul li {
+  list-style-type: none;
+  padding: 0 15px;
+}
+header .container .row .main-nav .menubar ul li a {
+  text-decoration: none;
+  font-size: 16px;
+  display: block;
+  text-transform: capitalize;
+  padding: 10px 0;
+  color: #0b2b3f;
+  font-weight: 600;
+}
+header .container .row .main-nav .btn {
+  width: 20%;
+  display: flex;
+  justify-content: end;
+  align-items: center;
+}/*# sourceMappingURL=header.css.map */

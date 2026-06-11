@@ -13,6 +13,7 @@ import Fabricquality from './components/FabricQuality/Fabricquality';
 import ProductionReport from './pages/ProductionReport/ProductionReport';
 import AdminReport from './pages/AdminReport/AdminReport';
 import YarnQuality from './components/YarnQuality/YarnQuality';
+import Header from './components/Header/Header';
 
 const getDeviceDetails = () => {
   const parser = new UAParser();
@@ -34,8 +35,26 @@ const USERS_DB = [
 function App() {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showLogin, setShowLogin] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('authUser');
+    if (savedUser) {
+      const parsedData = JSON.parse(savedUser);
+      const today = new Date().toLocaleDateString();
+
+      if (parsedData.loginDate === today) {
+        setCurrentUser(parsedData);
+      } else {
+        localStorage.removeItem('authUser');
+        setCurrentUser(null);
+      }
+    }
+    setLoading(false); // ✅ important
+  }, []);
 
   // PASTE YOUR URL HERE
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzYPp_rqBf-mXz30-N4zIZMXvRPJ8_L7mHiH9oC4U-GNjl5Ml2npGGm_uKNrnIXOb6/exec';
@@ -104,55 +123,184 @@ function App() {
     setCredentials({ username: '', password: '' });
     navigate('/');
   };
+  const ProtectedRoute = ({ currentUser, loading, children }) => {
+    if (loading) return null; // or loader
 
-  if (!currentUser) {
-    return (
-      <div style={{ textAlign: 'center', marginTop: '100px' }}>
-        <div style={{ display: 'inline-block', padding: '30px', border: '1px solid #ddd', borderRadius: '10px' }}>
-          <h2>System Login</h2>
-          <form onSubmit={handleLogin}>
-            <input type="text" placeholder="Username" onChange={e => setCredentials({ ...credentials, username: e.target.value })} required style={{ display: 'block', margin: '10px auto', padding: '10px' }} />
-            <input type="password" placeholder="Password" onChange={e => setCredentials({ ...credentials, password: e.target.value })} required style={{ display: 'block', margin: '10px auto', padding: '10px' }} />
-            <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '5px' }}>Login</button>
-          </form>
-          {error && <p style={{ color: 'red' }}>{error}</p>}
-        </div>
-      </div>
-    );
-  }
-
+    if (!currentUser) {
+      return <Navigate to="/" />;
+    }
+    return children;
+  };
+  if (loading) return <div>Loading...</div>;
   return (
     <div className="App">
-      <header className="app-header">
-        <div className="header-left">
-          <NavLink to='/'>
-            <img src="/logo.enc" alt="Logo" className="logo" />
-          </NavLink>
-          <span className="user-info">
-            <strong>{currentUser?.username}</strong>
-            <span className="device"> ({currentUser?.device})</span>
-          </span>
-        </div>
+      <Header currentUser={currentUser} onLoginClick={() => setShowLogin(true)} onLogout={handleLogout} />
 
-        <button onClick={handleLogout} className="logout-btn">
-          Logout
-        </button>
-      </header>
+      {showLogin && !currentUser && (
+        <>
+          <section className='login-form-section'>
+            <div className="close-login-form" onClick={() => setShowLogin(false)}>
+              x
+            </div>
+            <div className="container">
+              <div className="row">
+                <div className="main-box">
+                  <div className="box">
+                    <div className="content">
+                      <h2>Mahakali Textile</h2>
+                      <h3>Login Form</h3>
+                      <form onSubmit={handleLogin}>
+                        <div className="input-box">
+                          <label>Username</label>
+                          <input
+                            type="text"
+                            placeholder="Username"
+                            onChange={e => setCredentials({ ...credentials, username: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="input-box">
+                          <label>Password</label>
+                          <input
+                            type="password"
+                            placeholder="Password"
+                            onChange={e => setCredentials({ ...credentials, password: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <button type="submit">Login</button>
+                      </form>
+                      {error && <p style={{ color: "#ffe400" }}>{error}</p>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
 
+      {
+        currentUser && (
+          <section className='admin-button-section'>
+            <div className="container">
+              <div className="row">
+                <ul style={{
+                  listStyle: "none",
+                  padding: 0,
+                  display: "flex",
+                  gap: "10px",
+                  justifyContent: "center",
+                  flexWrap: "wrap"
+                }}>
+
+                  {/* Common Links */}
+                  <li>
+                    <NavLink to="/attendance" style={navStyle("#4CAF50")}>
+                      Daily Attendance
+                    </NavLink>
+                  </li>
+
+                  <li>
+                    <NavLink to="/production" style={navStyle("#2196F3")}>
+                      Daily Production
+                    </NavLink>
+                  </li>
+
+                  {/* Admin Only Links */}
+                  {currentUser.role === "admin" && (
+                    <>
+                      <li>
+                        <NavLink to="/attendancerecord" style={navStyle("#ff9800")}>
+                          Attendance Record
+                        </NavLink>
+                      </li>
+
+                      <li>
+                        <NavLink to="/productionreport" style={navStyle("#9c27b0")}>
+                          Production Report
+                        </NavLink>
+                      </li>
+                    </>
+                  )}
+
+                  <li>
+                    <NavLink to="/adminreport" style={navStyle("#f44336")}>
+                      Admin Report
+                    </NavLink>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+        )
+      }
       <Routes>
+        {/* Public Route */}
         <Route path='/' element={<Homepage currentUser={currentUser} />} />
-        <Route path='/attendance' element={<AttendancePage currentUser={currentUser} />} />
-        <Route path='/production' element={<Production />} />
-        <Route path="/production/:date?" element={<Production />} />
-        <Route path='/fabric' element={<Fabricquality />} />
-        <Route path='/yarn' element={<YarnQuality />} />
-        <Route path='/attendancerecord' element={currentUser.role === 'admin' ? <AttendanceRecord /> : <Navigate to="/" />} />
-        <Route path='/productionreport' element={currentUser.role === 'admin' ? <ProductionReport /> : <Navigate to="/" />} />
-        <Route path='/adminreport' element={<AdminReport currentUser={currentUser}/>} />
-        <Route path="*" element={<Navigate to="/" />} />
+
+        {/* Protected Routes (Login Required) */}
+        <Route path='/attendance' element={
+          <ProtectedRoute currentUser={currentUser}>
+            <AttendancePage currentUser={currentUser} />
+          </ProtectedRoute>
+        } />
+
+        <Route path='/production' element={
+          <ProtectedRoute currentUser={currentUser}>
+            <Production />
+          </ProtectedRoute>
+        } />
+
+        <Route path='/production/:date' element={
+          <ProtectedRoute currentUser={currentUser}>
+            <Production />
+          </ProtectedRoute>
+        } />
+
+        <Route path='/fabric' element={
+          <ProtectedRoute currentUser={currentUser}>
+            <Fabricquality />
+          </ProtectedRoute>
+        } />
+
+        <Route path='/yarn' element={
+          <ProtectedRoute currentUser={currentUser}>
+            <YarnQuality />
+          </ProtectedRoute>
+        } />
+
+        {/* Admin Only */}
+        <Route path='/attendancerecord' element={
+          <ProtectedRoute currentUser={currentUser}>
+            {currentUser?.role === 'admin' ? <AttendanceRecord /> : <Navigate to="/" />}
+          </ProtectedRoute>
+        } />
+
+        <Route path='/productionreport' element={
+          <ProtectedRoute currentUser={currentUser}>
+            {currentUser?.role === 'admin' ? <ProductionReport /> : <Navigate to="/" />}
+          </ProtectedRoute>
+        } />
+
+        <Route path='/adminreport' element={
+          <ProtectedRoute currentUser={currentUser}>
+            <AdminReport currentUser={currentUser} />
+          </ProtectedRoute>
+        } />
       </Routes>
     </div>
   );
 }
-
+const navStyle = (bgColor) => ({
+  display: "inline-block",
+  padding: "10px 18px",
+  backgroundColor: bgColor,
+  color: "#fff",
+  textDecoration: "none",
+  borderRadius: "6px",
+  fontSize: "16px",
+  fontWeight: "bold",
+  transition: "0.3s"
+});
 export default App;

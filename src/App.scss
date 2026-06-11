@@ -1,0 +1,218 @@
+// main-heading css start
+.main-heading {
+  text-align: center;
+
+  h2 {
+    font-size: 42px;
+    position: relative;
+    margin: 0;
+    padding-bottom: 15px;
+    color: #0b2b3f;
+  }
+
+  h3 {
+    &.watermark {
+      font-size: 90px;
+      font-weight: 800;
+      white-space: nowrap;
+      color: transparent;
+      -webkit-text-stroke: 1.5px #0b2b3f;
+      pointer-events: none;
+      margin: 0;
+    }
+  }
+
+  p {
+    font-size: 16px;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+// main-heading css end
+
+// login-form-section start
+.login-form-section {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: linear-gradient(to right, #0F0C29 0%, #302B63 50%, #24243E 100%);
+  height: 100vh;
+  width: 100%;
+  z-index: 99;
+
+  .close-login-form {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    border: 2px solid white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .container {
+    .row {
+      .main-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100vh;
+
+        .box {
+          padding: 40px;
+          background: rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 16px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+          width: 100%;
+          max-width: 500px;
+
+          .content {
+            h2 {
+              color: white;
+              font-size: 28px;
+              margin: 0;
+              padding-bottom: 10px;
+            }
+
+            h3 {
+              color: white;
+              margin: 0;
+              font-size: 20px;
+              font-weight: normal;
+              padding-bottom: 15px;
+            }
+
+            form {
+              .input-box {
+                padding: 10px 0;
+
+                label {
+                  color: white;
+                  display: block;
+                  padding: 8px 0;
+                  font-weight: 600;
+                }
+
+                input {
+                  width: 100%;
+                  max-width: stretch;
+                  border: 0;
+                  padding: 12px;
+                  border-radius: 6px;
+                  font-size: 16px;
+                }
+              }
+
+              button {
+                margin-top: 10px;
+                padding: 12px;
+                font-size: 16px;
+                width: 100%;
+                color: white;
+                background-color: #bd0c47;
+                border: 0;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: 600;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// login-form-section end
+
+// admin-button-section start
+@media print {
+  .admin-button-section {
+    display: none !important;
+  }
+}
+
+// admin-button-section end
+
+
+// media-query start
+@media (max-width: 1300px) {
+
+  // main-heading start
+  .main-heading {
+    h2 {
+      font-size: 32px;
+    }
+  }
+
+  // main-heading end
+}
+
+@media (max-width: 991px) {
+
+  // main-heading start
+  .main-heading {
+    h2 {
+      font-size: 28px;
+    }
+
+    h3 {
+      &.watermark {
+        font-size: 52px;
+      }
+    }
+  }
+
+  // main-heading end
+}
+
+@media (max-width: 575px) {
+
+  // main-heading start
+  .main-heading {
+    h2 {
+      font-size: 26px;
+    }
+
+    h3 {
+      &.watermark {
+        font-size: 38px;
+        padding-bottom: 15px;
+      }
+    }
+  }
+
+  // main-heading end
+
+  // login-form-section start
+  .login-form-section {
+    .container {
+      .row {
+        .main-box {
+          .box {
+            padding: 20px;
+          }
+        }
+      }
+    }
+  }
+
+  // login-form-section end
+}
+
+// media-query end
