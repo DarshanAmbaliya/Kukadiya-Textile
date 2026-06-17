@@ -221,6 +221,22 @@ function App() {
                           Production Report
                         </NavLink>
                       </li>
+                      <li>
+                        <NavLink
+                          to="/fabric"
+                          style={navStyle("#3F51B5")}
+                        >
+                          Add Fabric
+                        </NavLink>
+                      </li>
+                      <li>
+                        <NavLink
+                          to="/yarn"
+                          style={navStyle("#334155")}
+                        >
+                          Add Yarn
+                        </NavLink>
+                      </li>
                     </>
                   )}
 
