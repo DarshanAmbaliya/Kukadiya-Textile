@@ -111,9 +111,8 @@ const AdminReport = ({ currentUser }) => {
           ? (41666 / (avgPick * totalProduction))
           : 0;
 
-        // Use calculatedAvgMainUsed instead of external variable
-        const pickChargePerUnit = (totalPick > 0)
-          ? (calculatedAvgMainUsed / totalPick) * 7.9
+          const pickChargePerUnit = (totalPick > 0)
+          ? ((Number(row.mainUsed) > 0 ? Number(row.mainUsed) : Number(calculatedAvgMainUsed)) / totalPick) * 7.9
           : 0;
 
         return {
