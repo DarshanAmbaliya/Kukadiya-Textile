@@ -14,6 +14,7 @@ import ProductionReport from './pages/ProductionReport/ProductionReport';
 import AdminReport from './pages/AdminReport/AdminReport';
 import YarnQuality from './components/YarnQuality/YarnQuality';
 import Header from './components/Header/Header';
+import DashboardChart from './pages/DashboardChart/DashboardChart';
 
 const getDeviceDetails = () => {
   const parser = new UAParser();
@@ -245,6 +246,13 @@ function App() {
                       Admin Report
                     </NavLink>
                   </li>
+                  {currentUser.role === "admin" && (
+                    <li>
+                      <NavLink to="/dashboard" style={navStyle("#00bcd4")}>
+                        Chart
+                      </NavLink>
+                    </li>
+                  )}
                 </ul>
               </div>
             </div>
@@ -259,6 +267,12 @@ function App() {
         <Route path='/attendance' element={
           <ProtectedRoute currentUser={currentUser}>
             <AttendancePage currentUser={currentUser} />
+          </ProtectedRoute>
+        } />
+
+        <Route path='/dashboard' element={
+          <ProtectedRoute currentUser={currentUser}>
+            {currentUser?.role === 'admin' ? <DashboardChart /> : <Navigate to="/" />}
           </ProtectedRoute>
         } />
 
