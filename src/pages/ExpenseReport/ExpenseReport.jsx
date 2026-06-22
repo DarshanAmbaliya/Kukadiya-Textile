@@ -4,15 +4,16 @@ import { useNavigate } from "react-router-dom";
 
 const ExpenseReport = () => {
   const currentYear = new Date().getFullYear().toString();
-  const currentMonthNum = (new Date().getMonth() + 1).toString(); // "1" - "12"
+  const currentMonthNum = (new Date().getMonth() + 1).toString(); 
 
   const [year, setYear] = useState(currentYear);
-  const [month, setMonth] = useState(currentMonthNum); // Updated: Starts at current month instead of ""
+  const [month, setMonth] = useState(currentMonthNum); 
   const [reportData, setReportData] = useState([]);
   const [grandTotal, setGrandTotal] = useState(0);
   const [isMonthlyView, setIsMonthlyView] = useState(false);
   
-  // A safety flag to prevent endless loops if the whole year is completely empty
+  // Holds calculated category column totals for the yearly footer row
+  const [categoryTotals, setCategoryTotals] = useState({});
   const [hasCheckedFallback, setHasCheckedFallback] = useState(false);
 
   const navigate = useNavigate(); 
@@ -31,10 +32,9 @@ const ExpenseReport = () => {
     fetchCategories();
   }, []);
 
-  // Updated: Added dependencies to handle changes and auto-scans cleanly
   useEffect(() => {
     fetchReport();
-  }, [year, month, hasCheckedFallback]);
+  }, [year, month, hasCheckedFallback, categories]); // Added categories to ensure synchronization
 
   const fetchCategories = async () => {
     try {
@@ -53,21 +53,19 @@ const ExpenseReport = () => {
         );
         
         if (res.data.success) {
-          // --- NEW FALLBACK LOGIC ---
-          // If no expenses are found, and we haven't tried fallback rules yet, check the previous month
           if (res.data.data.length === 0 && !hasCheckedFallback) {
             let prevMonth = parseInt(month) - 1;
             let targetYear = parseInt(year);
 
             if (prevMonth === 0) {
               prevMonth = 12;
-              targetYear -= 1; // Drop to December of last year
+              targetYear -= 1;
             }
 
-            setHasCheckedFallback(true); // Flag true so we only jump back once
+            setHasCheckedFallback(true);
             setYear(String(targetYear));
             setMonth(String(prevMonth));
-            return; // Exit execution early to allow state refresh triggers to rerun fetchReport
+            return;
           }
 
           setReportData(res.data.data);
@@ -75,7 +73,7 @@ const ExpenseReport = () => {
           setIsMonthlyView(true);
         }
       } else {
-        // --- YEARLY SUMMARY CODE BLOCK ---
+        // --- UPDATED: DYNAMIC YEARLY MATRIX CODE BLOCK ---
         const promises = [];
         for (let m = 1; m <= 12; m++) {
           promises.push(
@@ -85,18 +83,41 @@ const ExpenseReport = () => {
 
         const responses = await Promise.all(promises);
         let annualTotal = 0;
+        
+        // Initialize an object to store vertical column totals for each category
+        const tempCategoryTotals = {};
+        categories.forEach(cat => { tempCategoryTotals[cat.name] = 0; });
+
         const compiledMonths = responses.map((res, index) => {
           const monthNum = index + 1;
           const monthTotal = res.data.success ? res.data.totalExpense : 0;
           annualTotal += monthTotal;
 
+          // Object map for instant category name -> total lookups
+          const breakdown = {};
+          categories.forEach(cat => { breakdown[cat.name] = 0; });
+
+          // Aggregate matching items into their respective structural buckets 
+          if (res.data.success && res.data.data) {
+            res.data.data.forEach((expense) => {
+              // Assumes backend items have 'category' property or fallback directly matching expense structures
+              const catName = expense.category || expense.name; 
+              if (breakdown[catName] !== undefined) {
+                breakdown[catName] += expense.amount;
+                tempCategoryTotals[catName] += expense.amount;
+              }
+            });
+          }
+
           return {
             monthNumber: monthNum,
             monthName: monthNames[monthNum],
+            breakdown: breakdown,
             totalExpense: monthTotal
           };
         });
 
+        setCategoryTotals(tempCategoryTotals);
         setReportData(compiledMonths);
         setGrandTotal(annualTotal);
         setIsMonthlyView(false);
@@ -108,9 +129,8 @@ const ExpenseReport = () => {
     }
   };
 
-  // Reset the fallback protection whenever manual drop-down selection events occur
   const handleMonthChange = (e) => {
-    setHasCheckedFallback(true); // Disables auto-jumping when selecting manually
+    setHasCheckedFallback(true);
     setMonth(e.target.value);
   };
 
@@ -180,9 +200,7 @@ const ExpenseReport = () => {
 
           {/* --- FILTER & ACTION CONTROL ROW --- */}
           <div className="filter-controls" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "15px" }}>
-
             <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
-              {/* Year Selector */}
               <div className="filter-menu">
                 <label><strong>Select Year: </strong></label>
                 <select value={year} onChange={handleYearChange}>
@@ -193,7 +211,6 @@ const ExpenseReport = () => {
                 </select>
               </div>
 
-              {/* Month Selector */}
               <div className="filter-menu">
                 <label><strong>Select Month: </strong></label>
                 <select value={month} onChange={handleMonthChange}>
@@ -214,39 +231,11 @@ const ExpenseReport = () => {
               </div>
             </div>
 
-            {/* Action Buttons Container */}
             <div className="no-print" style={{ display: "flex", gap: "10px" }}>
-              <button
-                onClick={handlePrint}
-                style={{
-                  background: "#3498db",
-                  color: "#ffffff",
-                  border: "none",
-                  padding: "8px 16px",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-                }}
-              >
+              <button onClick={handlePrint} style={{ background: "#3498db", color: "#ffffff", border: "none", padding: "8px 16px", fontSize: "14px", fontWeight: "600", borderRadius: "4px", cursor: "pointer", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
                 Print Report
               </button>
-
-              <button
-                onClick={handleNavigateToAddExpense}
-                style={{
-                  background: "#28a745",
-                  color: "#ffffff",
-                  border: "none",
-                  padding: "8px 16px",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-                }}
-              >
+              <button onClick={handleNavigateToAddExpense} style={{ background: "#28a745", color: "#ffffff", border: "none", padding: "8px 16px", fontSize: "14px", fontWeight: "600", borderRadius: "4px", cursor: "pointer", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
                 + Add Expense
               </button>
             </div>
@@ -267,6 +256,10 @@ const ExpenseReport = () => {
                   <tr>
                     <th>Month Code</th>
                     <th>Month Name</th>
+                    {/* Render Category Names dynamically as separate columns */}
+                    {categories.map((cat) => (
+                      <th key={cat._id || cat.name}>{cat.name}</th>
+                    ))}
                     <th>Total Expenses (₹)</th>
                   </tr>
                 )}
@@ -279,7 +272,7 @@ const ExpenseReport = () => {
                         <td>{index + 1}</td>
                         <td style={{ fontWeight: "500" }}>{row.name}</td>
                         <td style={{ fontStyle: "italic", color: "#666" }}>{row.notes || "—"}</td>
-                        <td style={{ textAlign: "right", paddingRight: "40px",fontWeight: "700" }}>
+                        <td style={{ textAlign: "right", paddingRight: "40px", fontWeight: "700" }}>
                           {row.amount.toLocaleString("en-IN")}/-
                         </td>
                       </tr>
@@ -296,7 +289,18 @@ const ExpenseReport = () => {
                         <td style={{ fontWeight: "500", color: "#007bff", textDecoration: "underline" }}>
                           {row.monthName}
                         </td>
-                        <td style={{ textAlign: "right", paddingRight: "40px" }}>
+                        
+                        {/* Print out amounts allocated to individual sub-categories */}
+                        {categories.map((cat) => {
+                          const val = row.breakdown ? row.breakdown[cat.name] : 0;
+                          return (
+                            <td key={cat._id || cat.name} style={{ textAlign: "right" }}>
+                              {val > 0 ? `${val.toLocaleString("en-IN")}/-` : "—"}
+                            </td>
+                          );
+                        })}
+
+                        <td style={{ textAlign: "right", paddingRight: "20px", fontWeight: "600" }}>
                           {row.totalExpense > 0 ? `${row.totalExpense.toLocaleString("en-IN")}/-` : "0/-"}
                         </td>
                       </tr>
@@ -304,7 +308,7 @@ const ExpenseReport = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={isMonthlyView ? "4" : "3"}>No records discovered for specified criteria.</td>
+                    <td colSpan={isMonthlyView ? "4" : 3 + categories.length}>No records discovered for specified criteria.</td>
                   </tr>
                 )}
               </tbody>
@@ -313,7 +317,15 @@ const ExpenseReport = () => {
                   <td colSpan={isMonthlyView ? "3" : "2"} style={{ textAlign: "right", paddingRight: "20px" }}>
                     {isMonthlyView ? "Total Month Expense:" : `Grand Total for ${year}:`}
                   </td>
-                  <td style={{ textAlign: "right", paddingRight: "40px" }}>
+
+                  {/* Render the structural summary calculations vertically for yearly breakdown views */}
+                  {!isMonthlyView && categories.map((cat) => (
+                    <td key={cat._id || cat.name} style={{ textAlign: "right" }}>
+                      {categoryTotals[cat.name] > 0 ? `${categoryTotals[cat.name].toLocaleString("en-IN")}/-` : "0/-"}
+                    </td>
+                  ))}
+
+                  <td style={{ textAlign: "right", paddingRight: isMonthlyView ? "40px" : "20px" }}>
                     {grandTotal.toLocaleString("en-IN")}/-
                   </td>
                 </tr>
