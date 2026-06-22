@@ -1,0 +1,284 @@
+// --- Variables ---
+$primary-color: #0066cc;
+$success-color: #218838;
+$success-hover: #1e7e34;
+$cancel-color: #e2e8f0;
+$cancel-hover: #cbd5e1;
+$border-color: #dcdcdc;
+$text-dark: #333333;
+$text-muted: #4a5568;
+
+// --- Structural Responsiveness Mixins/Styles ---
+.top-filter-controls {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  
+  @media (max-width: 576px) {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.category-quick-form {
+  display: flex;
+  gap: 5px;
+  
+  input {
+    @media (max-width: 576px) {
+      flex: 1;
+    }
+  }
+  
+  button {
+    cursor: pointer;
+  }
+}
+
+.expense-form-container {
+  margin-top: 15px;
+  background: #fdfdfd;
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.expense-transaction-form {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  width: 100%;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+}
+
+.form-group-item {
+  flex: 1;
+  
+  &.min-150 { min-width: 150px; }
+  &.min-120 { min-width: 120px; }
+  &.min-130 { min-width: 130px; }
+  &.min-180 { min-width: 180px; }
+  
+  &.flex-grow-2 {
+    flex: 2;
+  }
+
+  @media (max-width: 768px) {
+    min-width: 100% !important;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+  }
+
+  select, input {
+    width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+  }
+}
+
+.btn-add-expense {
+  cursor: pointer;
+  align-self: flex-end;
+  padding: 6px 20px;
+  background: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+
+  @media (max-width: 768px) {
+    align-self: stretch;
+    padding: 10px;
+  }
+}
+
+// --- Table Responsiveness ---
+.table-responsive-wrapper {
+  overflow-x: auto;
+  margin-top: 20px;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ledger-table {
+  border-collapse: collapse;
+  width: 100%;
+  text-align: center;
+  border: 1px solid #ddd;
+
+  thead {
+    background: #eee;
+  }
+
+  th, td {
+    text-align: center;
+  }
+
+  .note-cell {
+    font-style: italic;
+    color: #666;
+  }
+
+  .amount-cell {
+    text-align: right;
+    padding-right: 30px;
+  }
+
+  tfoot {
+    background: #e9ecef;
+    font-weight: bold;
+    
+    .total-label-cell {
+      text-align: right;
+      padding-right: 20px;
+    }
+  }
+}
+
+.category-management-box {
+  margin-top: 40px;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+}
+
+.category-pills-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+// --- Category Management Section ---
+.category-pill {
+  padding: 6px 12px;
+  background: #ffffff;
+  border: 1px solid $border-color;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: darken($border-color, 15%);
+  }
+
+  .category-name {
+    font-size: 14px;
+    color: $text-dark;
+    font-weight: 500;
+  }
+}
+
+// --- Edit Button (Pill Layout) ---
+.btn-edit-pill {
+  background: #f0f4f8;
+  border: none;
+  color: $primary-color;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: $primary-color;
+    color: #ffffff;
+  }
+}
+
+// --- Inline Editing Controls ---
+.category-edit-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+
+  .category-edit-input {
+    padding: 4px 8px;
+    font-size: 13px;
+    border: 1px solid $primary-color;
+    border-radius: 4px;
+    outline: none;
+    max-width: 120px;
+  }
+}
+
+// --- Action Utility Buttons ---
+.btn-action {
+  border: none;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &.btn-save {
+    background: $success-color;
+    color: #ffffff;
+
+    &:hover {
+      background: $success-hover;
+    }
+  }
+
+  &.btn-cancel {
+    background: $cancel-color;
+    color: $text-muted;
+
+    &:hover {
+      background: $cancel-hover;
+    }
+  }
+}
+
+@media (max-width: 991px){
+  .expense-section{
+    h2 {
+      font-size: 34px;
+    }
+  }
+}
+@media (max-width: 767px){
+  .expense-section{
+    h2 {
+      font-size: 28px;
+    }
+  }
+}
+@media (max-width: 575px){
+  .expense-section{
+    h2 {
+      font-size: 22px;
+    }
+    .filter-controls {
+      form {
+        justify-content: center !important;
+      }
+      .filter-menu {
+        form {
+          flex-wrap: wrap;
+          width: 100%;
+          justify-content: center;
+
+          button {
+            padding: 10px;
+          }
+        }
+      }
+    }
+  }
+}

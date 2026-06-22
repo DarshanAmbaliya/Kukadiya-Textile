@@ -15,6 +15,8 @@ import AdminReport from './pages/AdminReport/AdminReport';
 import YarnQuality from './components/YarnQuality/YarnQuality';
 import Header from './components/Header/Header';
 import DashboardChart from './pages/DashboardChart/DashboardChart';
+import Expense from './components/Expense/Expense';
+import ExpenseReport from './pages/ExpenseReport/ExpenseReport';
 
 const getDeviceDetails = () => {
   const parser = new UAParser();
@@ -253,6 +255,20 @@ function App() {
                       </NavLink>
                     </li>
                   )}
+                  {currentUser.role === "admin" && (
+                    <li>
+                      <NavLink to="/expense" style={navStyle("#673AB7")}>
+                        Add Expense
+                      </NavLink>
+                    </li>
+                  )}
+                  {currentUser.role === "admin" && (
+                    <li>
+                      <NavLink to="/expense-report" style={navStyle("#795548")}>
+                        Expense Report
+                      </NavLink>
+                    </li>
+                  )}
                 </ul>
               </div>
             </div>
@@ -272,7 +288,18 @@ function App() {
 
         <Route path='/dashboard' element={
           <ProtectedRoute currentUser={currentUser}>
-            {currentUser?.role === 'admin' ? <DashboardChart /> : <Navigate to="/" />}
+            {currentUser?.role === 'admin' ? <Expense /> : <Navigate to="/" />}
+          </ProtectedRoute>
+        } />
+        <Route path='/expense' element={
+          <ProtectedRoute currentUser={currentUser}>
+            {currentUser?.role === 'admin' ? <Expense /> : <Navigate to="/" />}
+          </ProtectedRoute>
+        } />
+
+        <Route path='/expense-report' element={
+          <ProtectedRoute currentUser={currentUser}>
+            {currentUser?.role === 'admin' ? <ExpenseReport /> : <Navigate to="/" />}
           </ProtectedRoute>
         } />
 
