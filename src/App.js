@@ -288,7 +288,7 @@ function App() {
 
         <Route path='/dashboard' element={
           <ProtectedRoute currentUser={currentUser}>
-            {currentUser?.role === 'admin' ? <Expense /> : <Navigate to="/" />}
+            {currentUser?.role === 'admin' ? <DashboardChart /> : <Navigate to="/" />}
           </ProtectedRoute>
         } />
         <Route path='/expense' element={
