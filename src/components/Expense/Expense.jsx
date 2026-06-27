@@ -145,7 +145,7 @@ const Expense = () => {
         categoryId: "",
         amount: "",
         notes: "",
-        date: new Date().toISOString().slice(0, 10),
+        date: expenseForm.date,
       });
 
     } catch (err) {
@@ -184,12 +184,12 @@ const Expense = () => {
 
   const cancelExpenseEdit = () => {
     setEditingExpenseId(null);
-    setExpenseForm({
+    setExpenseForm((prev) => ({
       categoryId: "",
       amount: "",
       notes: "",
-      date: new Date().toISOString().slice(0, 10),
-    });
+      date: prev.date,
+    }));
   };
 
   return (

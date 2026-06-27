@@ -17,6 +17,7 @@ import Header from './components/Header/Header';
 import DashboardChart from './pages/DashboardChart/DashboardChart';
 import Expense from './components/Expense/Expense';
 import ExpenseReport from './pages/ExpenseReport/ExpenseReport';
+import ExpenseChart from './pages/ExpenseReport/ExpenseChart';
 
 const getDeviceDetails = () => {
   const parser = new UAParser();
@@ -343,6 +344,11 @@ function App() {
         <Route path='/adminreport' element={
           <ProtectedRoute currentUser={currentUser}>
             <AdminReport currentUser={currentUser} />
+          </ProtectedRoute>
+        } />
+        <Route path='/expense-chart' element={
+          <ProtectedRoute currentUser={currentUser}>
+            <ExpenseChart currentUser={currentUser} />
           </ProtectedRoute>
         } />
       </Routes>
