@@ -12,6 +12,7 @@ const Production = () => {
   });
   const [yarnList, setYarnList] = useState([]); // All available yarns from DB
   const [selectedYarns, setSelectedYarns] = useState([{ yarn_name: "", quantity: "" }]);
+  const [notes, setNotes] = useState("");
 
   /**
  * FIXED API URL LOGIC
@@ -102,13 +103,18 @@ const Production = () => {
     ? (nightEffValues.reduce((a, b) => a + b, 0) / nightEffValues.length).toFixed(2)
     : "0.00";
 
-  const pickValues = machines
-    .map(m => parseFloat(m.pick))
-    .filter(v => v > 0);
+  const totalPick = machines.reduce((sum, m) => {
+    const totalMeter =
+      (Number(m.dayMeter) || 0) +
+      (Number(m.nightMeter) || 0);
 
-  const avgTotalPick = pickValues.length
-    ? (pickValues.reduce((a, b) => a + b, 0) / pickValues.length).toFixed(2)
-    : "0.00";
+    return sum + totalMeter * (Number(m.pick) || 0);
+  }, 0);
+
+  const weightedAvgPick =
+    totalProdMeter > 0
+      ? (totalPick / totalProdMeter).toFixed(2)
+      : "0.00";
 
   const avgTotalRPM = (() => {
     const rpmVals = machines.map(m => parseFloat(m.rpm)).filter(v => v > 0);
@@ -147,25 +153,30 @@ const Production = () => {
 
     const entries = [];
     const calculateTotalTargetMeter = () => {
-      const avgRPM = parseFloat(avgTotalRPM);
-      const avgPick = parseFloat(avgTotalPick);
+      return machines.reduce((sum, machine) => {
+        const rpm = Number(machine.rpm);
+        const pick = Number(machine.pick);
 
-      // Use the actual Average Factory Efficiency 
-      // (avgDayEff + avgNightEff) / 2
-      const factoryEff = (parseFloat(avgDayEff) + parseFloat(avgNightEff)) / 2;
-      const effDecimal = factoryEff / 100;
+        if (rpm <= 0 || pick <= 0) return sum;
 
-      // Use the actual number of machines in your state
-      const totalMachines = machines.length;
+        let target = 0;
 
-      if (avgRPM <= 0 || avgPick <= 0 || factoryEff <= 0) return 0;
+        const dayEff = Number(machine.dayEff);
+        if (dayEff > 0) {
+          target += (rpm * (dayEff / 100) * 12 * 60) / (39.37 * pick);
+        }
 
-      // Formula: (RPM * Dynamic_Eff * 24 * 60 * Machine_Count) / (39.37 * Pick)
-      const target = (avgRPM * effDecimal * 24 * 60 * totalMachines) / (39.37 * avgPick);
-      return target;
+        const nightEff = Number(machine.nightEff);
+        if (nightEff > 0) {
+          target += (rpm * (nightEff / 100) * 12 * 60) / (39.37 * pick);
+        }
+
+        return sum + target;
+      }, 0);
     };
 
     const totalTargetMeter = calculateTotalTargetMeter();
+    // console.log(totalTargetMeter);
     const machineStopLoss = totalProdMeter - totalTargetMeter;
 
     for (let i = 0; i < 4; i++) {
@@ -177,20 +188,36 @@ const Production = () => {
           shift,
           average_meter: calculateAvg(i, shift === "Day" ? "dayMeter" : "nightMeter"),
           average_efficiency: calculateAvg(i, shift === "Day" ? "dayEff" : "nightEff"),
-          machine_production: machineBlock.map((m) => ({
-            machineNumber: m.machineNumber,
-            quality: m.quality,
-            reed: m.reed,
-            rpm: m.rpm,
-            bimNumber: m.bimNumber,
-            bimBalance: m.bimBalance,
-            meter: shift === "Day" ? m.dayMeter : m.nightMeter,
-            efficiency: shift === "Day" ? m.dayEff : m.nightEff,
-            pick: m.pick
-          }))
+          machine_production: machineBlock.map((m) => {
+            const meter = Number(shift === "Day" ? m.dayMeter : m.nightMeter) || 0;
+            const pick = Number(m.pick) || 0;
+            const machinePick = meter * pick;
+          
+            return {
+              machineNumber: m.machineNumber,
+              quality: m.quality,
+              reed: m.reed,
+              rpm: m.rpm,
+              bimNumber: m.bimNumber,
+              bimBalance: m.bimBalance,
+              meter,
+              efficiency: shift === "Day" ? m.dayEff : m.nightEff,
+              pick,
+              machinePick
+            };
+          })
         });
       });
     }
+
+    const totalPick = entries.reduce((total, operator) => {
+      operator.machine_production.forEach(machine => {
+        total += machine.machinePick;
+      });
+    
+      return total;
+    }, 0);
+    // console.log(totalPick);
 
     setProductionData({
       [year]: {
@@ -201,26 +228,27 @@ const Production = () => {
               total_day_production: totalDayProd,
               total_night_production: totalNightProd,
               total_bim_balance_sum: totalBimBalSum,
-              total_average_pick: avgTotalPick,
+              total_average_pick: weightedAvgPick,
               total_average_rpm: avgTotalRPM,
               total_average_day_efficiency: avgDayEff,
               total_average_night_efficiency: avgNightEff,
               compressor_meter: footerMeters.compressorMeter,
               main_meter: footerMeters.mainMeter,
-              total_pick: totalProdMeter * avgTotalPick,
+              total_pick: totalPick,
               total_day_lost_meter: totalDayLost,
               total_night_lost_meter: totalNightLost,
               total_lost_meter: grandTotalLost,
               target_production_meter: totalTargetMeter.toFixed(2),
               machine_stop_loss_meter: Number(machineStopLoss.toFixed(2)) - Number(grandTotalLost),
-              yarn: selectedYarns.filter(y => y.yarn_name !== "" && y.quantity !== "")
+              yarn: selectedYarns.filter(y => y.yarn_name !== "" && y.quantity !== ""),
+              notes: notes,
             },
             operator_data: entries
           }
         }
       }
     });
-  }, [machines, operators, selectedDate, footerMeters, selectedYarns]);
+  }, [machines, operators, selectedDate, footerMeters, selectedYarns, notes]);
 
   // Input change handlers
   const handleInputChange = (index, field, value) => {
@@ -265,6 +293,7 @@ const Production = () => {
             mainMeter: existing.summary?.main_meter || "",
             compressorMeter: existing.summary?.compressor_meter || ""
           });
+          setNotes(existing.summary?.notes || "");
           if (existing.summary?.yarn && existing.summary.yarn.length > 0) {
             setSelectedYarns(existing.summary.yarn);
           } else {
@@ -310,6 +339,8 @@ const Production = () => {
         } else {
           // OPTIONAL: Reset production meters if date is empty, 
           // but keep Quality/RPM/Reed from the current state.
+          setNotes("");
+
           setMachines(prev => prev.map(m => ({
             ...m,
             dayMeter: 0,
@@ -703,7 +734,7 @@ const Production = () => {
               >
                 Night Loss: {formatLostMeter(totalNightLost)}
               </td>
-              <td>Avg: {avgTotalPick}</td>
+              <td>Avg: {weightedAvgPick}</td>
             </tr>
             <tr>
               <td colSpan="6" style={{ textAlign: "right" }}>
@@ -829,6 +860,28 @@ const Production = () => {
             </button>
           </div>
         </div>
+
+        <div style={{
+  marginTop: "30px",
+  textAlign: "center"
+}}>
+
+  <h3>Production Notes</h3>
+
+  <textarea
+    value={notes}
+    onChange={(e)=>setNotes(e.target.value)}
+    placeholder="Enter production notes..."
+    rows="4"
+    style={{
+      width:"50%",
+      padding:"10px",
+      fontSize:"14px",
+      resize:"vertical"
+    }}
+  />
+
+</div>
 
         <div style={{ marginTop: "30px", textAlign: "center" }}>
           <button

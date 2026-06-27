@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 const ExpenseReport = () => {
-  const currentYear = new Date().getFullYear().toString();
-  const currentMonthNum = (new Date().getMonth() + 1).toString(); 
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 11 }, (_, i) => currentYear + i);
+  const currentMonthNum = (new Date().getMonth() + 1).toString();
 
   const [year, setYear] = useState(currentYear);
-  const [month, setMonth] = useState(currentMonthNum); 
+  const [month, setMonth] = useState("");
   const [reportData, setReportData] = useState([]);
   const [grandTotal, setGrandTotal] = useState(0);
   const [isMonthlyView, setIsMonthlyView] = useState(false);
-  
+
   // Holds calculated category column totals for the yearly footer row
   const [categoryTotals, setCategoryTotals] = useState({});
   const [hasCheckedFallback, setHasCheckedFallback] = useState(false);
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
 
   const API_BASE_URL = window.location.hostname === "localhost"
@@ -34,7 +35,7 @@ const ExpenseReport = () => {
 
   useEffect(() => {
     fetchReport();
-  }, [year, month, hasCheckedFallback, categories]); // Added categories to ensure synchronization
+  }, [year, month, hasCheckedFallback, categories]);
 
   const fetchCategories = async () => {
     try {
@@ -51,7 +52,7 @@ const ExpenseReport = () => {
         const res = await axios.get(
           `${API_BASE_URL}/api/expenses/monthly?year=${year}&month=${month}`
         );
-        
+
         if (res.data.success) {
           if (res.data.data.length === 0 && !hasCheckedFallback) {
             let prevMonth = parseInt(month) - 1;
@@ -83,7 +84,7 @@ const ExpenseReport = () => {
 
         const responses = await Promise.all(promises);
         let annualTotal = 0;
-        
+
         // Initialize an object to store vertical column totals for each category
         const tempCategoryTotals = {};
         categories.forEach(cat => { tempCategoryTotals[cat.name] = 0; });
@@ -101,7 +102,7 @@ const ExpenseReport = () => {
           if (res.data.success && res.data.data) {
             res.data.data.forEach((expense) => {
               // Assumes backend items have 'category' property or fallback directly matching expense structures
-              const catName = expense.category || expense.name; 
+              const catName = expense.category || expense.name;
               if (breakdown[catName] !== undefined) {
                 breakdown[catName] += expense.amount;
                 tempCategoryTotals[catName] += expense.amount;
@@ -135,7 +136,7 @@ const ExpenseReport = () => {
   };
 
   const handleYearChange = (e) => {
-    setHasCheckedFallback(true); 
+    setHasCheckedFallback(true);
     setYear(e.target.value);
   };
 
@@ -148,22 +149,22 @@ const ExpenseReport = () => {
   const handlePrint = () => {
     const printContent = document.getElementById("expense-report").innerHTML;
     const iframe = document.createElement("iframe");
-    
+
     iframe.style.position = "absolute";
     iframe.style.width = "0px";
     iframe.style.height = "0px";
     iframe.style.border = "none";
-    
+
     document.body.appendChild(iframe);
-    
+
     const doc = iframe.contentWindow.document;
     doc.open();
     doc.write(`<html><head><title>Print</title></head><body>${printContent}</body></html>`);
     doc.close();
-    
+
     iframe.contentWindow.focus();
     iframe.contentWindow.print();
-    
+
     setTimeout(() => document.body.removeChild(iframe), 500);
   };
 
@@ -204,10 +205,11 @@ const ExpenseReport = () => {
               <div className="filter-menu">
                 <label><strong>Select Year: </strong></label>
                 <select value={year} onChange={handleYearChange}>
-                  <option value="2025">2025</option>
-                  <option value="2026">2026</option>
-                  <option value="2027">2027</option>
-                  <option value="2028">2028</option>
+                  {years.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -277,9 +279,9 @@ const ExpenseReport = () => {
                         </td>
                       </tr>
                     ) : (
-                      <tr 
+                      <tr
                         key={row.monthNumber}
-                        onClick={() => { setHasCheckedFallback(true); setMonth(String(row.monthNumber)); }} 
+                        onClick={() => { setHasCheckedFallback(true); setMonth(String(row.monthNumber)); }}
                         title={`Click to filter view for ${row.monthName}`}
                         style={{ cursor: "pointer" }}
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f8f9fa"}
@@ -289,7 +291,7 @@ const ExpenseReport = () => {
                         <td style={{ fontWeight: "500", color: "#007bff", textDecoration: "underline" }}>
                           {row.monthName}
                         </td>
-                        
+
                         {/* Print out amounts allocated to individual sub-categories */}
                         {categories.map((cat) => {
                           const val = row.breakdown ? row.breakdown[cat.name] : 0;

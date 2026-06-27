@@ -59,12 +59,76 @@ const AdminReport = ({ currentUser }) => {
       const prevYear = prevMonthDate.getFullYear();
       const prevMonthStr = (prevMonthDate.getMonth() + 1).toString().padStart(2, "0");
 
-      const [currentRes, prevRes] = await Promise.all([
+      const [currentRes, prevRes, expenseRes] = await Promise.all([
         axios.get(`${API_URL}month?month=${year}-${month}`),
-        axios.get(`${API_URL}month?month=${prevYear}-${prevMonthStr}`)
+        axios.get(`${API_URL}month?month=${prevYear}-${prevMonthStr}`),
+        axios.get(`${API_BASE_URL}/api/expenses/monthly?year=${year}&month=${parseInt(month)}`)
       ]);
 
       const combinedData = { ...(prevRes.data || {}), ...(currentRes.data || {}) };
+
+      const expenseData = expenseRes.data?.data || [];
+      const totalExpense = expenseRes.data?.totalExpense || 0;
+
+      const lightBill = expenseData.find(
+        (e) => e.name === "LIGHT BILL"
+      );
+
+      const lightBillAmount = lightBill ? Number(lightBill.amount) : 0;
+
+
+      // FIND LAST MONTH EXPENSE IF CURRENT MONTH NOT AVAILABLE
+      let fixedExpenseTotal = totalExpense;
+      let fixedLightBill = lightBillAmount;
+
+
+      if (expenseData.length === 0) {
+
+        let searchDate = new Date(year, parseInt(month) - 2, 1);
+
+        for (let i = 0; i < 12; i++) {
+
+          const searchYear = searchDate.getFullYear();
+          const searchMonth = searchDate.getMonth() + 1;
+
+
+          const lastExpenseRes = await axios.get(
+            `${API_BASE_URL}/api/expenses/monthly?year=${searchYear}&month=${searchMonth}`
+          );
+
+
+          const lastExpenseData = lastExpenseRes.data?.data || [];
+
+
+          if (lastExpenseData.length > 0) {
+
+            fixedExpenseTotal = lastExpenseRes.data?.totalExpense || 0;
+
+
+            const lastLightBill = lastExpenseData.find(
+              (e) => e.name === "LIGHT BILL"
+            );
+
+
+            fixedLightBill = lastLightBill
+              ? Number(lastLightBill.amount)
+              : 0;
+
+
+            break;
+          }
+
+
+          searchDate.setMonth(searchDate.getMonth() - 1);
+
+        }
+
+      }
+
+
+      // FINAL DAILY FIXED EXPENSE
+      const dailyFixedExpense =
+        (fixedExpenseTotal - fixedLightBill) / 30;
 
       const sortedDates = Object.keys(combinedData).sort((a, b) => {
         const [d1, m1, y1] = a.split("-");
@@ -107,11 +171,16 @@ const AdminReport = ({ currentUser }) => {
         const totalPick = Number(current.total_pick || 0);
 
         // 18.5 - 5.5 (30 days)
-        const pickChargeFixedCost = (avgPick > 0 && totalProduction > 0)
-          ? (41666 / (avgPick * totalProduction))
-          : 0;
+        // const pickChargeFixedCost = (avgPick > 0 && totalProduction > 0)
+        //   ? (41666 / (avgPick * totalProduction))
+        //   : 0;
 
-          const pickChargePerUnit = (totalPick > 0)
+        const pickChargeFixedCost =
+          (avgPick > 0 && totalProduction > 0)
+            ? (dailyFixedExpense / (avgPick * totalProduction))
+            : 0;
+
+        const pickChargePerUnit = (totalPick > 0)
           ? ((Number(row.mainUsed) > 0 ? Number(row.mainUsed) : Number(calculatedAvgMainUsed)) / totalPick) * 7.9
           : 0;
 
