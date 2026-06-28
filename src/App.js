@@ -304,6 +304,14 @@ function App() {
           </ProtectedRoute>
         } />
 
+        {(currentUser.role === "admin") && (
+          <li>
+            <NavLink to="/expense-chart" style={navStyle("#2E8B57")}>
+              Expense Chart
+            </NavLink>
+          </li>
+        )}
+
         <Route path='/production' element={
           <ProtectedRoute currentUser={currentUser}>
             <Production />
