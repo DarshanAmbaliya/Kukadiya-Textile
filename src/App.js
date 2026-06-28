@@ -270,6 +270,13 @@ function App() {
                       </NavLink>
                     </li>
                   )}
+                  {(currentUser.role === "admin") && (
+                    <li>
+                      <NavLink to="/expense-chart" style={navStyle("#2E8B57")}>
+                        Expense Chart
+                      </NavLink>
+                    </li>
+                  )}
                 </ul>
               </div>
             </div>
@@ -298,19 +305,11 @@ function App() {
           </ProtectedRoute>
         } />
 
-        <Route path='/expense-report' element={
+        <Route path='/expense' element={
           <ProtectedRoute currentUser={currentUser}>
             {currentUser?.role === 'admin' ? <ExpenseReport /> : <Navigate to="/" />}
           </ProtectedRoute>
         } />
-
-        {(currentUser.role === "admin") && (
-          <li>
-            <NavLink to="/expense-chart" style={navStyle("#2E8B57")}>
-              Expense Chart
-            </NavLink>
-          </li>
-        )}
 
         <Route path='/production' element={
           <ProtectedRoute currentUser={currentUser}>
