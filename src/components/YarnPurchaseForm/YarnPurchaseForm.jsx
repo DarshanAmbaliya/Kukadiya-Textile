@@ -12,6 +12,10 @@ const YarnPurchaseForm = () => {
   const editMode = Boolean(id);
   const today = new Date().toISOString().split("T")[0];
 
+  const API_BASE_URL = window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://mahakali-textiles.onrender.com";
+
   const [formData, setFormData] = useState({
     yarnId: "",
     purchaseDate: today,
@@ -30,7 +34,7 @@ const YarnPurchaseForm = () => {
   const fetchYarns = async () => {
     try {
       setFetchLoading(true);
-      const res = await axios.get("http://localhost:5000/api/yarns");
+      const res = await axios.get(`${API_BASE_URL}/api/yarns`);
       setYarns(res.data);
     } catch (err) {
       console.log(err);
@@ -42,7 +46,7 @@ const YarnPurchaseForm = () => {
 
   const fetchPurchase = async () => {
     const res = await axios.get(
-      `http://localhost:5000/api/yarn-purchase/${id}`
+      `${API_BASE_URL}/api/yarn-purchase/${id}`
     );
 
     setFormData({
@@ -71,7 +75,7 @@ const YarnPurchaseForm = () => {
       setLoading(true);
       if (editMode) {
         await axios.put(
-          `http://localhost:5000/api/yarn-purchase/${id}`,
+          `${API_BASE_URL}/api/yarn-purchase/${id}`,
 
           {
             ...formData,
@@ -83,7 +87,7 @@ const YarnPurchaseForm = () => {
       }
       else {
         await axios.post(
-          "http://localhost:5000/api/yarn-purchase",
+          `${API_BASE_URL}/api/yarn-purchase`,
           {
             ...formData,
             totalAmount
