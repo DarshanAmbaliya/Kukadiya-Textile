@@ -13,6 +13,10 @@ const YarnPurchaseReport = () => {
 
   const [loading, setLoading] = useState(false);
 
+  const API_BASE_URL = window.location.hostname === "localhost"
+  ? "http://localhost:5000"
+  : "https://mahakali-textiles.onrender.com";
+
   useEffect(() => {
     fetchReport();
   }, [year, month]);
@@ -22,7 +26,7 @@ const YarnPurchaseReport = () => {
       setLoading(true);
 
       const res = await axios.get(
-        `http://localhost:5000/api/yarn-purchase/report?year=${year}&month=${month}`
+        `${API_BASE_URL}/api/yarn-purchase/report?year=${year}&month=${month}`
       );
 
       setYarns(res.data.yarns || []);
@@ -197,7 +201,7 @@ const YarnPurchaseReport = () => {
                                   onClick={async () => {
                                     if (window.confirm("Delete this purchase?")) {
                                       await axios.delete(
-                                        `http://localhost:5000/api/yarn-purchase/${item._id}`
+                                        `${API_BASE_URL}/api/yarn-purchase/${item._id}`
                                       );
                                       fetchReport();
                                     }

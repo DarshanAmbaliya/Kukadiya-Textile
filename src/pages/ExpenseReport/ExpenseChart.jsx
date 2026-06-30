@@ -39,7 +39,6 @@ const ExpenseCharts = () => {
     stroke: { curve: "smooth", width: 3, lineCap: "round" },
     grid: { borderColor: "#f1f3f5", strokeDashArray: 4 },
     dataLabels: { enabled: false },
-    // 👇 ADDED MARKERS CONFIGURATION HERE 👇
     markers: {
       size: 5,                  // Size of the data points
       strokeWidth: 2,           // Border width of the points
