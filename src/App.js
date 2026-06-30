@@ -18,6 +18,8 @@ import DashboardChart from './pages/DashboardChart/DashboardChart';
 import Expense from './components/Expense/Expense';
 import ExpenseReport from './pages/ExpenseReport/ExpenseReport';
 import ExpenseChart from './pages/ExpenseReport/ExpenseChart';
+import YarnPurchaseForm from './components/YarnPurchaseForm/YarnPurchaseForm';
+import YarnPurchaseReport from './pages/YarnPurchaseReport/YarnPurchaseReport';
 
 const getDeviceDetails = () => {
   const parser = new UAParser();
@@ -57,7 +59,7 @@ function App() {
         setCurrentUser(null);
       }
     }
-    setLoading(false); // ✅ important
+    setLoading(false); // important
   }, []);
 
   // PASTE YOUR URL HERE
@@ -277,6 +279,13 @@ function App() {
                       </NavLink>
                     </li>
                   )}
+                  {(currentUser.role === "admin") && (
+                    <li>
+                      <NavLink to="/yarn-report" style={navStyle("#f58bf8")}>
+                        Yarn Report
+                      </NavLink>
+                    </li>
+                  )}
                 </ul>
               </div>
             </div>
@@ -305,7 +314,7 @@ function App() {
           </ProtectedRoute>
         } />
 
-        <Route path='/expense' element={
+        <Route path='/expense-report' element={
           <ProtectedRoute currentUser={currentUser}>
             {currentUser?.role === 'admin' ? <ExpenseReport /> : <Navigate to="/" />}
           </ProtectedRoute>
@@ -358,6 +367,25 @@ function App() {
             <ExpenseChart currentUser={currentUser} />
           </ProtectedRoute>
         } />
+        <Route path='/yarn-purchase' element={
+          <ProtectedRoute currentUser={currentUser}>
+            <YarnPurchaseForm currentUser={currentUser} />
+          </ProtectedRoute>
+        } />
+        <Route
+          path="/yarn-purchase/edit/:id"
+          element={
+            <ProtectedRoute currentUser={currentUser}>
+              <YarnPurchaseForm currentUser={currentUser} />
+            </ProtectedRoute>
+          }
+        />
+        <Route path='/yarn-report' element={
+          <ProtectedRoute currentUser={currentUser}>
+            <YarnPurchaseReport currentUser={currentUser} />
+          </ProtectedRoute>
+        } />
+
       </Routes>
     </div>
   );
