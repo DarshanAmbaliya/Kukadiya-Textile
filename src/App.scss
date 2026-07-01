@@ -1,4 +1,25 @@
 // main-heading css start
+.home-banner {
+  .image {
+    img {
+      height: 350px;
+      border-radius: 12px;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .home-banner {
+    .image {
+      img {
+        width: 100%;
+        height: auto;
+      }
+    }
+  }
+  
+}
+
 .main-heading {
   text-align: center;
 
