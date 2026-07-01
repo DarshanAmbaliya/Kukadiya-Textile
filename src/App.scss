@@ -17,7 +17,28 @@
       }
     }
   }
+
+}
+
+@media (max-width: 575px) {
+  .yarn-purchase-section {
+    .box {
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center !important;
   
+      .filter-control {
+        width: 100%;
+  
+        select {
+          width: 100%;
+        }
+      }
+      a {
+        display: block;
+      }
+    }
+  }
 }
 
 .main-heading {

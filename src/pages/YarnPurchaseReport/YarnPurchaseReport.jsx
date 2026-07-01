@@ -40,7 +40,7 @@ const YarnPurchaseReport = () => {
   };
 
   return (
-    <div
+    <div className="yarn-purchase-section"
       style={{
         padding: 20,
         background: "#f5f6fa",
@@ -52,11 +52,11 @@ const YarnPurchaseReport = () => {
       {/* FILTER */}
 
       <div className="box" style={{
-        display: "flex", justifyContent: "space-between", background: "white", marginBottom: 20, padding: 15,
+        display: "flex",flex: "wrap", justifyContent: "space-between", background: "white", marginBottom: 20, padding: 15,
         borderRadius: 8,
         alignItems: "center"
       }}>
-        <div
+        <div className="filter-control"
           style={{
             display: "flex",
             gap: 15,

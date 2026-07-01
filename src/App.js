@@ -79,8 +79,6 @@ function App() {
           ip: ""
         }),
       });
-
-      console.log("Log sent");
     } catch (err) {
       console.error(err);
     }

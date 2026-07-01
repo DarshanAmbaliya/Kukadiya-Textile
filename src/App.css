@@ -9,6 +9,22 @@
     height: auto;
   }
 }
+@media (max-width: 575px) {
+  .yarn-purchase-section .box {
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center !important;
+  }
+  .yarn-purchase-section .box .filter-control {
+    width: 100%;
+  }
+  .yarn-purchase-section .box .filter-control select {
+    width: 100%;
+  }
+  .yarn-purchase-section .box a {
+    display: block;
+  }
+}
 .main-heading {
   text-align: center;
 }
