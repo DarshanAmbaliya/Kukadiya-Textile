@@ -21,7 +21,7 @@ export default function AttendanceRecord() {
 
   const API_BASE_URL = window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "https://mahakali-textiles.onrender.com";
+    : "https://kukadiya-textile.onrender.com";
 
   const API_URL = `${API_BASE_URL}/api/employees`;
   useEffect(() => {
@@ -85,7 +85,7 @@ const handlePrintSlip = () => {
         {/* --- SCREEN HEADER --- */}
         <div className="app-header no-print">
           <div className="brand">
-            <h2>Mahakali Textiles</h2>
+            <h2>Kukadiya Textile</h2>
             <p>{selectedMonth || 'Select Month'} {selectedYear}</p>
           </div>
 
@@ -106,8 +106,8 @@ const handlePrintSlip = () => {
         {/* --- PRINT HEADER --- */}
         <div className="print-only">
           <div className="print-header">
-            <h1>MAHAKALI TEXTILES</h1>
-            <p>Hindwa Textile, Parab Road, Umbhel</p>
+            <h1>KUKADIYA TEXTILE</h1>
+            {/* <p>Hindwa Textile, Parab Road, Umbhel</p> */}
             <div className="report-title">
               SALARY STATEMENT: {selectedMonth.toUpperCase()} {selectedYear}
             </div>

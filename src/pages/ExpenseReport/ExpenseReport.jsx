@@ -22,7 +22,7 @@ const ExpenseReport = () => {
 
   const API_BASE_URL = window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "https://mahakali-textiles.onrender.com";
+    : "https://kukadiya-textile.onrender.com";
 
   const monthNames = [
     "", "January", "February", "March", "April", "May", "June",

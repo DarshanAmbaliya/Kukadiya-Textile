@@ -1,13 +1,21 @@
 const express = require("express");
 const router = express.Router();
-const { getFabrics, createFabric } = require("../controllers/fabricController");
 
-// Route to get all fabrics
-// GET /api/fabrics
+const {
+    getFabrics,
+    createFabric,
+    updateFabric,
+    deleteFabric
+} = require("../controllers/fabricController");
+
+
 router.get("/", getFabrics);
-
-// Route to create a new fabric
-// POST /api/fabrics
 router.post("/", createFabric);
+
+// EDIT QUALITY
+router.put("/:id", updateFabric);
+
+// DELETE QUALITY
+router.delete("/:id", deleteFabric);
 
 module.exports = router;

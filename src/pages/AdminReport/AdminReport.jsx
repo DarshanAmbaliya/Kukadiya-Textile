@@ -4,6 +4,7 @@ import { NavLink } from "react-router-dom";
 
 const AdminReport = ({ currentUser }) => {
   const isAdmin = currentUser?.role === "admin";
+  const isDeveloper = currentUser?.role === "site_developer";
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, "0");
@@ -18,7 +19,7 @@ const AdminReport = ({ currentUser }) => {
   const API_BASE_URL =
     window.location.hostname === "localhost"
       ? "http://localhost:5000"
-      : "https://mahakali-textiles.onrender.com";
+      : "https://kukadiya-textile.onrender.com";
 
   const API_URL = `${API_BASE_URL}/api/production/`;
 
@@ -409,7 +410,7 @@ const AdminReport = ({ currentUser }) => {
       <div className="container">
         <div className="row">
           <h2 className="title" style={{ textAlign: "center", margin: "0" }}>
-            Mahakali Textiles - {monthNames[parseInt(month) - 1]} {year}
+            Kukadiya Textile - {monthNames[parseInt(month) - 1]} {year}
             <br />
             <p>
               {startDate && endDate
@@ -519,15 +520,15 @@ const AdminReport = ({ currentUser }) => {
                   <th>Avg Pick</th>
                   <th>Compressor Meter</th>
                   <th>Main Meter</th>
-                  <th>Total Machine stop Loss Meter</th>
+                  {/* <th>Total Machine stop Loss Meter</th> */}
                   <th>Total Loss Meter</th>
                   <th>Total Production Meter</th>
                   {
-                    isAdmin && (
+                    (isAdmin || isDeveloper) && (
                       <>
                         <th>Total Pick</th>
-                        <th>Pick Charge Per Unit</th>
-                        <th>Pick Charge</th>
+                        {/* <th>Pick Charge Per Unit</th>
+                        <th>Pick Charge</th> */}
                       </>
                     )
                   }
@@ -548,22 +549,22 @@ const AdminReport = ({ currentUser }) => {
                       <td>{row.avg_pick}</td>
                       <td>{Number(row.compressor_meter_used).toFixed(2)}</td>
                       <td>{Number(row.main_meter_used).toFixed(2)}</td>
-                      <td style={{
+                      {/* <td style={{
                         color: row.total_machine_stop_loss_meter > 0 ? "#2e7d32" : row.total_machine_stop_loss_meter < 0 ? "red" : "black"
                       }}>
                         {formatWithSign(row.total_machine_stop_loss_meter)}
-                      </td>
+                      </td> */}
                       <td style={{
                         color: row.total_lost_meter > 0 ? "#2e7d32" : row.total_lost_meter < 0 ? "red" : "black"
                       }}>
                         {formatWithSign(row.total_lost_meter)}
                       </td>
                       <td>{row.total_production_meter}</td>
-                      {isAdmin && (
+                      {(isAdmin || isDeveloper) && (
                         <>
                           <td>{(row.total_pick).toFixed(2)}</td>
-                          <td>{row.pick_charge_per_unit}</td>
-                          <td>{row.pick_charge}</td>
+                          {/* <td>{row.pick_charge_per_unit}</td>
+                          <td>{row.pick_charge}</td> */}
                         </>
                       )}
                     </tr>
@@ -587,11 +588,11 @@ const AdminReport = ({ currentUser }) => {
                   <td>
                     AVG: {Number(avgMainUsed).toFixed(2)} <br />TOTAL: {Number(totalMainUsed).toFixed(2)}
                   </td>
-                  <td style={{
+                  {/* <td style={{
                     color: totalMachineStopLoss > 0 ? "#2e7d32" : totalMachineStopLoss < 0 ? "red" : "black"
                   }}>
                     AVG: {avgMachineStopLoss} <br />TOTAL: {formatWithSign(totalMachineStopLoss)}
-                  </td>
+                  </td> */}
                   <td style={{
                     color: totalLostMeter > 0 ? "#2e7d32" : totalLostMeter < 0 ? "red" : "black"
                   }}>
@@ -600,11 +601,11 @@ const AdminReport = ({ currentUser }) => {
                   <td>
                     AVG: {avgProduction} <br />TOTAL: {totalProduction}
                   </td>
-                  {currentUser?.role == "admin" && (
+                  {(currentUser?.role == "admin" || isDeveloper) && (
                     <>
                       <td>AVG: {avgTotalPick} <br />TOTAL: {totalPick}</td>
-                      <td>{avgPickChargePerUnit}</td>
-                      <td>{avgPickCharge}</td>
+                      {/* <td>{avgPickChargePerUnit}</td>
+                      <td>{avgPickCharge}</td> */}
                     </>
                   )}
                 </tr>

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Route, Routes, Navigate, useNavigate, NavLink } from 'react-router-dom';
 import { UAParser } from 'ua-parser-js';
-import bcrypt from "bcryptjs";
+import Register from './pages/Register';
+import ResetPassword from './pages/ResetPassword';
 import './App.css';
 
 // Page Imports
@@ -20,6 +21,7 @@ import ExpenseReport from './pages/ExpenseReport/ExpenseReport';
 import ExpenseChart from './pages/ExpenseReport/ExpenseChart';
 import YarnPurchaseForm from './components/YarnPurchaseForm/YarnPurchaseForm';
 import YarnPurchaseReport from './pages/YarnPurchaseReport/YarnPurchaseReport';
+import axios from 'axios';
 
 const getDeviceDetails = () => {
   const parser = new UAParser();
@@ -31,13 +33,6 @@ const getDeviceDetails = () => {
   return `${vendor} ${model} (${os})`.trim();
 };
 
-const USERS_DB = [
-  { username: 'admin', hash: '$2b$10$Wi5OE4ZlocW49O/8qDbbgOatoV5Nbn/ug9pTLJohPdkoS53PU5MI2', role: 'admin', name: 'Administrator' },
-  { username: 'demo', hash: '$2b$10$P8.kmq08IebevVfYBV2HRuklURWXNBcKqqcub5PnWpYaYUA6iUSX2', role: 'demo', name: 'Manager' },
-  { username: 'pushpa', hash: '$2b$10$Cm5gvq8M5UMg/E5c3xb0MObavpgU2f1TsFff2A84UM.7YbHsbvwwS', role: 'user', name: 'Staff' },
-  { username: 'santosh', hash: '$2b$10$Psmc.ocZNxrl4JaPDdQlj.2p8w3xyL5bpCWjyvuzsKyF1/VbnWg3q', role: 'user', name: 'Staff' }
-];
-
 function App() {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [currentUser, setCurrentUser] = useState(null);
@@ -45,6 +40,7 @@ function App() {
   const [error, setError] = useState('');
   const [showLogin, setShowLogin] = useState(false);
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('authUser');
@@ -63,22 +59,31 @@ function App() {
   }, []);
 
   // PASTE YOUR URL HERE
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzYPp_rqBf-mXz30-N4zIZMXvRPJ8_L7mHiH9oC4U-GNjl5Ml2npGGm_uKNrnIXOb6/exec';
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxkxVbbJ-Oje-ajmz_sMEfW3sczjn-WiB6K3_eEdxphL1NXwV7dUKs3VKg6O2XJtaaX/exec";
 
-  // Function to send data to Sheet
-  const logToSheet = (user, status) => {
-    fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: user.username,
-        role: user.role,
-        device: user.device || getDeviceDetails(),
-        login_time: new Date().toLocaleTimeString(),
-        status: status // "Login" or "Logout"
-      })
-    });
+  const logToSheet = async (user, status) => {
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: user.username,
+          role: user.role,
+          device: user.device,
+          status: status,
+          browser: navigator.userAgent,
+          url: window.location.href,
+          ip: ""
+        }),
+      });
+  
+      console.log("Log sent");
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {
@@ -95,27 +100,49 @@ function App() {
     }
   }, []);
 
-  const handleLogin = (e) => {
+  const API_BASE_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000"
+      : "https://kukadiya-textile.onrender.com";
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const userMatch = USERS_DB.find(
-      (u) => u.username.toLowerCase() === credentials.username.toLowerCase() &&
-        bcrypt.compareSync(credentials.password, u.hash)
-    );
 
-    if (userMatch) {
-      const deviceInfo = getDeviceDetails();
-      const today = new Date().toLocaleDateString();
-      const sessionData = { ...userMatch, device: deviceInfo, loginDate: today };
+    try {
+      const { data } = await axios.post(
+        `${API_BASE_URL}/api/auth/login`,
+        {
+          username: credentials.username,
+          password: credentials.password,
+        }
+      );
 
-      // SEND LOGIN STATUS
-      logToSheet(sessionData, "Login");
+      if (data.success) {
+        const deviceInfo = getDeviceDetails();
 
-      setCurrentUser(sessionData);
-      localStorage.setItem('authUser', JSON.stringify(sessionData));
-      setError('');
-      navigate('/');
-    } else {
-      setError('Invalid username or password');
+        const sessionData = {
+          ...data.user,
+          device: deviceInfo,
+          loginDate: new Date().toLocaleDateString(),
+        };
+
+        logToSheet(sessionData, "Login");
+
+        setCurrentUser(sessionData);
+
+        localStorage.setItem(
+          "authUser",
+          JSON.stringify(sessionData)
+        );
+
+        setError("");
+
+        navigate("/");
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Login failed"
+      );
     }
   };
 
@@ -129,6 +156,7 @@ function App() {
     setCredentials({ username: '', password: '' });
     navigate('/');
   };
+
   const ProtectedRoute = ({ currentUser, loading, children }) => {
     if (loading) return null; // or loader
 
@@ -143,47 +171,239 @@ function App() {
       <Header currentUser={currentUser} onLoginClick={() => setShowLogin(true)} onLogout={handleLogout} />
 
       {showLogin && !currentUser && (
-        <>
-          <section className='login-form-section'>
-            <div className="close-login-form" onClick={() => setShowLogin(false)}>
-              x
+        <section
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "rgba(0,0,0,0.65)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 999,
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "420px",
+              background: "#fff",
+              padding: "35px",
+              borderRadius: "18px",
+              boxShadow: "0 15px 40px rgba(0,0,0,0.3)",
+              position: "relative",
+            }}
+          >
+            <div
+              onClick={() => setShowLogin(false)}
+              style={{
+                position: "absolute",
+                right: "18px",
+                top: "10px",
+                fontSize: "30px",
+                cursor: "pointer",
+                color: "#555",
+              }}
+            >
+              ×
             </div>
-            <div className="container">
-              <div className="row">
-                <div className="main-box">
-                  <div className="box">
-                    <div className="content">
-                      <h2>Mahakali Textile</h2>
-                      <h3>Login Form</h3>
-                      <form onSubmit={handleLogin}>
-                        <div className="input-box">
-                          <label>Username</label>
-                          <input
-                            type="text"
-                            placeholder="Username"
-                            onChange={e => setCredentials({ ...credentials, username: e.target.value })}
-                            required
-                          />
-                        </div>
-                        <div className="input-box">
-                          <label>Password</label>
-                          <input
-                            type="password"
-                            placeholder="Password"
-                            onChange={e => setCredentials({ ...credentials, password: e.target.value })}
-                            required
-                          />
-                        </div>
-                        <button type="submit">Login</button>
-                      </form>
-                      {error && <p style={{ color: "#ffe400" }}>{error}</p>}
-                    </div>
-                  </div>
-                </div>
+
+            <h2
+              style={{
+                textAlign: "center",
+                color: "#185a9d",
+                marginBottom: "5px",
+              }}
+            >
+              Kukadiya Textile
+            </h2>
+
+            <h3
+              style={{
+                textAlign: "center",
+                marginBottom: "25px",
+                color: "#333",
+              }}
+            >
+              Login Form
+            </h3>
+
+            <form onSubmit={handleLogin}>
+              <div style={{ marginBottom: "18px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    fontWeight: "600",
+                    marginBottom: "6px",
+                  }}
+                >
+                  Username
+                </label>
+
+                <input
+                  type="text"
+                  placeholder="Enter username"
+                  onChange={(e) =>
+                    setCredentials({
+                      ...credentials,
+                      username: e.target.value,
+                    })
+                  }
+                  style={{
+                    width: "100%",
+                    padding: "13px",
+                    borderRadius: "10px",
+                    border: "1px solid #ddd",
+                    fontSize: "15px",
+                    boxSizing: "border-box",
+                  }}
+                  required
+                />
               </div>
+
+              <div style={{ marginBottom: "15px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    fontWeight: "600",
+                    marginBottom: "6px",
+                  }}
+                >
+                  Password
+                </label>
+
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter password"
+                  onChange={(e) =>
+                    setCredentials({
+                      ...credentials,
+                      password: e.target.value,
+                    })
+                  }
+                  style={{
+                    width: "100%",
+                    padding: "13px",
+                    borderRadius: "10px",
+                    border: "1px solid #ddd",
+                    fontSize: "15px",
+                    boxSizing: "border-box",
+                  }}
+                  required
+                />
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  fontSize: "14px",
+                  marginBottom: "20px",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={showPassword}
+                  onChange={() =>
+                    setShowPassword(!showPassword)
+                  }
+                />
+
+                <span>
+                  Show Password
+                </span>
+              </div>
+
+              <button
+                type="submit"
+                style={{
+                  width: "100%",
+                  padding: "14px",
+                  border: "none",
+                  borderRadius: "10px",
+                  background: "#185a9d",
+                  color: "#fff",
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                Login
+              </button>
+
+            </form>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginTop: "20px",
+                flexWrap: "wrap",
+                gap: "10px",
+              }}
+            >
+
+              <NavLink
+                to="/register"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowLogin(false);
+                  const pin = window.prompt("Enter Security PIN");
+                  if (pin === "4386") {
+                    navigate("/register");
+                  } else {
+                    alert("Invalid PIN");
+                  }
+                }}
+                style={{
+                  color: "#185a9d",
+                  fontWeight: "600",
+                  textDecoration: "none",
+                }}
+              >
+                Create Account
+              </NavLink>
+
+              <NavLink
+                to="/reset-password"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowLogin(false);
+                  const pin = window.prompt("Enter Security PIN");
+                  if (pin === "4386") {
+                    navigate("/reset-password");
+                  } else {
+                    alert("Invalid PIN");
+                  }
+                }}
+                style={{
+                  color: "#185a9d",
+                  fontWeight: "600",
+                  textDecoration: "none",
+                }}
+              >
+                Forgot Password?
+              </NavLink>
+
             </div>
-          </section>
-        </>
+
+            {error && (
+              <p
+                style={{
+                  color: "red",
+                  textAlign: "center",
+                  marginTop: "15px",
+                  fontWeight: "600",
+                }}
+              >
+                {error}
+              </p>
+            )}
+          </div>
+        </section>
       )}
 
       {
@@ -214,7 +434,7 @@ function App() {
                   </li>
 
                   {/* Admin Only Links */}
-                  {currentUser.role === "admin" && (
+                  {(currentUser.role === "admin" || currentUser.role === "site_developer") && (
                     <>
                       <li>
                         <NavLink to="/attendancerecord" style={navStyle("#ff9800")}>
@@ -251,35 +471,35 @@ function App() {
                       Admin Report
                     </NavLink>
                   </li>
-                  {currentUser.role === "admin" && (
+                  {(currentUser.role === "admin" || currentUser.role === "site_developer") && (
                     <li>
                       <NavLink to="/dashboard" style={navStyle("#00bcd4")}>
                         Chart
                       </NavLink>
                     </li>
                   )}
-                  {currentUser.role === "admin" && (
+                  {(currentUser.role === "admin" || currentUser.role === "site_developer") && (
                     <li>
                       <NavLink to="/expense" style={navStyle("#673AB7")}>
                         Add Expense
                       </NavLink>
                     </li>
                   )}
-                  {currentUser.role === "admin" && (
+                  {(currentUser.role === "admin" || currentUser.role === "site_developer") && (
                     <li>
                       <NavLink to="/expense-report" style={navStyle("#795548")}>
                         Expense Report
                       </NavLink>
                     </li>
                   )}
-                  {(currentUser.role === "admin") && (
+                  {(currentUser.role === "" || currentUser.role === "site_developer") && (
                     <li>
                       <NavLink to="/expense-chart" style={navStyle("#2E8B57")}>
                         Expense Chart
                       </NavLink>
                     </li>
                   )}
-                  {(currentUser.role === "admin") && (
+                  {(currentUser.role === "admin" || currentUser.role === "site_developer") && (
                     <li>
                       <NavLink to="/yarn-report" style={navStyle("#f58bf8")}>
                         Yarn Report
@@ -295,6 +515,15 @@ function App() {
       <Routes>
         {/* Public Route */}
         <Route path='/' element={<Homepage currentUser={currentUser} />} />
+        <Route
+          path="/register"
+          element={<Register />}
+        />
+
+        <Route
+          path="/reset-password"
+          element={<ResetPassword />}
+        />
 
         {/* Protected Routes (Login Required) */}
         <Route path='/attendance' element={
@@ -305,18 +534,18 @@ function App() {
 
         <Route path='/dashboard' element={
           <ProtectedRoute currentUser={currentUser}>
-            {currentUser?.role === 'admin' ? <DashboardChart /> : <Navigate to="/" />}
+            {(currentUser?.role === 'admin' || currentUser?.role === 'site_developer') ? <DashboardChart /> : <Navigate to="/" />}
           </ProtectedRoute>
         } />
         <Route path='/expense' element={
           <ProtectedRoute currentUser={currentUser}>
-            {currentUser?.role === 'admin' ? <Expense /> : <Navigate to="/" />}
+            {(currentUser?.role === 'admin' || currentUser?.role === 'site_developer') ? <Expense /> : <Navigate to="/" />}
           </ProtectedRoute>
         } />
 
         <Route path='/expense-report' element={
           <ProtectedRoute currentUser={currentUser}>
-            {currentUser?.role === 'admin' ? <ExpenseReport /> : <Navigate to="/" />}
+            {(currentUser?.role === 'admin' || currentUser?.role === 'site_developer') ? <ExpenseReport /> : <Navigate to="/" />}
           </ProtectedRoute>
         } />
 
@@ -347,13 +576,13 @@ function App() {
         {/* Admin Only */}
         <Route path='/attendancerecord' element={
           <ProtectedRoute currentUser={currentUser}>
-            {currentUser?.role === 'admin' ? <AttendanceRecord /> : <Navigate to="/" />}
+            {(currentUser?.role === 'admin' || currentUser?.role === 'site_developer') ? <AttendanceRecord /> : <Navigate to="/" />}
           </ProtectedRoute>
         } />
 
         <Route path='/productionreport' element={
           <ProtectedRoute currentUser={currentUser}>
-            {currentUser?.role === 'admin' ? <ProductionReport /> : <Navigate to="/" />}
+            {(currentUser?.role === 'admin' || currentUser?.role === 'site_developer') ? <ProductionReport /> : <Navigate to="/" />}
           </ProtectedRoute>
         } />
 

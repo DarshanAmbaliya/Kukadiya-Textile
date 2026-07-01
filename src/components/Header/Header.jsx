@@ -4,13 +4,6 @@ import './Header.css';
 
 const Header = ({ currentUser, onLogout,onLoginClick  }) => {
 
-  const menuData = [
-    { menu: 'Home', link: '/' },
-    { menu: 'about us', link: '/' },
-    { menu: 'service', link: '/' },
-    { menu: 'contact us', link: '/' },
-  ];
-
   return (
     <header>
       <div className="container">
@@ -20,19 +13,8 @@ const Header = ({ currentUser, onLogout,onLoginClick  }) => {
             {/* Logo */}
             <div className="logo">
               <NavLink to='/'>
-                <img src="./logo.enc" alt="logo" />
+                <img src="./kukadiya-logo.jpg" alt="logo" />
               </NavLink>
-            </div>
-
-            {/* Menu */}
-            <div className="menubar">
-              <ul>
-                {menuData.map(({ link, menu }) => (
-                  <li key={menu}>
-                    <NavLink to={link}>{menu}</NavLink>
-                  </li>
-                ))}
-              </ul>
             </div>
 
             {/* User + Logout */}

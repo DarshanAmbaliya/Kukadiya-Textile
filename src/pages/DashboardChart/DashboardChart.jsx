@@ -13,7 +13,7 @@ const DashboardChart = () => {
   const API_BASE_URL =
     window.location.hostname === "localhost"
       ? "http://localhost:5000"
-      : "https://mahakali-textiles.onrender.com";
+      : "https://kukadiya-textile.onrender.com";
 
   useEffect(() => {
     fetchData();
@@ -289,7 +289,7 @@ const DashboardChart = () => {
         <div style={styles.brandContainer}>
           <div>
             <h1 style={{ margin: 0, fontSize: "20px", fontWeight: "700", color: "#0F172A", letterSpacing: "-0.3px" }}>
-              Mahakali Textiles
+              Kukadiya Textile
             </h1>
             <p style={{ margin: "2px 0 0 0", fontSize: "12px", color: "#64748B" }}>
               Production Run Reporting Metrics

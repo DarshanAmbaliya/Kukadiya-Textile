@@ -8,6 +8,7 @@ const productionRoutes = require("./routes/productionRoutes.js")
 const yarnRoutes = require("./routes/yarnRoutes");
 const expenseRoutes = require("./routes/expenseRoutes");
 const yarnPurchaseRoutes = require("./routes/yarnPurchaseRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ const app = express();
 // CORS Configuration
 // This allows your Netlify frontend to talk to this Railway backend
 app.use(cors({
-  origin: ["https://mahakalitextiles.netlify.app", "http://localhost:3000"],
+  origin: ["https://kukadiyatextile.netlify.app", "http://localhost:3000"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
@@ -27,6 +28,7 @@ app.use(cors({
 app.use(express.json());
 
 // API Routes
+app.use("/api/auth", authRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use("/api/fabrics", fabricRoutes);
 app.use("/api/production", productionRoutes);
@@ -36,7 +38,7 @@ app.use("/api/yarn-purchase", yarnPurchaseRoutes);
 
 // api status Check
 app.get('/', (req, res) => {
-  res.send('Mahakali Textiles API is running!');
+  res.send('Kukadiya Textile API is running!');
 });
 
 const PORT = process.env.PORT || 5000;

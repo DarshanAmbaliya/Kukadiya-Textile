@@ -15,7 +15,7 @@ const YarnPurchaseReport = () => {
 
   const API_BASE_URL = window.location.hostname === "localhost"
   ? "http://localhost:5000"
-  : "https://mahakali-textiles.onrender.com";
+  : "https://kukadiya-textile.onrender.com";
 
   useEffect(() => {
     fetchReport();
