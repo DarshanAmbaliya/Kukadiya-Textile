@@ -79,7 +79,7 @@ function App() {
           ip: ""
         }),
       });
-  
+
       console.log("Log sent");
     } catch (err) {
       console.error(err);
@@ -352,7 +352,7 @@ function App() {
                   e.preventDefault();
                   setShowLogin(false);
                   const pin = window.prompt("Enter Security PIN");
-                  if (pin === "4386") {
+                  if (pin === "5141") {
                     navigate("/register");
                   } else {
                     alert("Invalid PIN");
@@ -373,7 +373,7 @@ function App() {
                   e.preventDefault();
                   setShowLogin(false);
                   const pin = window.prompt("Enter Security PIN");
-                  if (pin === "4386") {
+                  if (pin === "5141") {
                     navigate("/reset-password");
                   } else {
                     alert("Invalid PIN");
@@ -471,28 +471,28 @@ function App() {
                       Admin Report
                     </NavLink>
                   </li>
-                  {(currentUser.role === "admin" || currentUser.role === "site_developer") && (
+                  {(currentUser.role === "site_developer") && (
                     <li>
                       <NavLink to="/dashboard" style={navStyle("#00bcd4")}>
                         Chart
                       </NavLink>
                     </li>
                   )}
-                  {(currentUser.role === "admin" || currentUser.role === "site_developer") && (
+                  {(currentUser.role === "site_developer") && (
                     <li>
                       <NavLink to="/expense" style={navStyle("#673AB7")}>
                         Add Expense
                       </NavLink>
                     </li>
                   )}
-                  {(currentUser.role === "admin" || currentUser.role === "site_developer") && (
+                  {(currentUser.role === "site_developer") && (
                     <li>
                       <NavLink to="/expense-report" style={navStyle("#795548")}>
                         Expense Report
                       </NavLink>
                     </li>
                   )}
-                  {(currentUser.role === "" || currentUser.role === "site_developer") && (
+                  {(currentUser.role === "site_developer") && (
                     <li>
                       <NavLink to="/expense-chart" style={navStyle("#2E8B57")}>
                         Expense Chart
@@ -534,18 +534,18 @@ function App() {
 
         <Route path='/dashboard' element={
           <ProtectedRoute currentUser={currentUser}>
-            {(currentUser?.role === 'admin' || currentUser?.role === 'site_developer') ? <DashboardChart /> : <Navigate to="/" />}
+            {(currentUser?.role === 'site_developer') ? <DashboardChart /> : <Navigate to="/" />}
           </ProtectedRoute>
         } />
         <Route path='/expense' element={
           <ProtectedRoute currentUser={currentUser}>
-            {(currentUser?.role === 'admin' || currentUser?.role === 'site_developer') ? <Expense /> : <Navigate to="/" />}
+            {(currentUser?.role === 'site_developer') ? <Expense /> : <Navigate to="/" />}
           </ProtectedRoute>
         } />
 
         <Route path='/expense-report' element={
           <ProtectedRoute currentUser={currentUser}>
-            {(currentUser?.role === 'admin' || currentUser?.role === 'site_developer') ? <ExpenseReport /> : <Navigate to="/" />}
+            {(currentUser?.role === 'site_developer') ? <ExpenseReport /> : <Navigate to="/" />}
           </ProtectedRoute>
         } />
 
@@ -593,12 +593,12 @@ function App() {
         } />
         <Route path='/expense-chart' element={
           <ProtectedRoute currentUser={currentUser}>
-            <ExpenseChart currentUser={currentUser} />
+            {(currentUser?.role === 'site_developer') ? <ExpenseChart /> : <Navigate to="/" />}
           </ProtectedRoute>
         } />
         <Route path='/yarn-purchase' element={
           <ProtectedRoute currentUser={currentUser}>
-            <YarnPurchaseForm currentUser={currentUser} />
+            {(currentUser?.role === 'admin' || currentUser?.role === 'site_developer') ? <YarnPurchaseForm /> : <Navigate to="/" />}
           </ProtectedRoute>
         } />
         <Route
@@ -611,7 +611,7 @@ function App() {
         />
         <Route path='/yarn-report' element={
           <ProtectedRoute currentUser={currentUser}>
-            <YarnPurchaseReport currentUser={currentUser} />
+            {(currentUser?.role === 'admin' || currentUser?.role === 'site_developer') ? <YarnPurchaseReport /> : <Navigate to="/" />}
           </ProtectedRoute>
         } />
 

@@ -28,7 +28,7 @@ const Production = () => {
   const API_URL = `${API_BASE_URL}`;
 
   const [machines, setMachines] = useState(
-    Array.from({ length: 16 }, (_, i) => ({
+    Array.from({ length: 12 }, (_, i) => ({
       machineNumber: i + 1,
       quality: "",
       reed: "",
@@ -499,13 +499,7 @@ const Production = () => {
             });
             return machineInfo;
           });
-          updatedMachines.forEach(m => {
-            console.log(
-              m.machineNumber,
-              "Day:", m.dayOperator,
-              "Night:", m.nightOperator
-            );
-          });
+          
           setMachines(updatedMachines);
         } else {
           // OPTIONAL: Reset production meters if date is empty, 
@@ -682,16 +676,6 @@ const Production = () => {
 
               const dayLost = calculateLostMeter(m.rpm, m.dayEff, m.pick, m.dayMeter);
               const nightLost = calculateLostMeter(m.rpm, m.nightEff, m.pick, m.nightMeter);
-              console.log(
-                m.machineNumber,
-                JSON.stringify(m.dayOperator),
-                employees.some(e => e.name === m.dayOperator)
-              );
-              console.log(
-                m.machineNumber,
-                JSON.stringify(m.nightOperator),
-                employees.some(e => e.name === m.nightOperator)
-              );
               return (
                 <tr key={m.machineNumber}>
                   <td>{m.machineNumber}</td>
