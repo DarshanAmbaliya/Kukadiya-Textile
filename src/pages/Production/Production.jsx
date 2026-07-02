@@ -499,7 +499,6 @@ const Production = () => {
             });
             return machineInfo;
           });
-          
           setMachines(updatedMachines);
         } else {
           // OPTIONAL: Reset production meters if date is empty, 
