@@ -166,17 +166,16 @@ const Production = () => {
     ? (nightEffValues.reduce((a, b) => a + b, 0) / nightEffValues.length).toFixed(2)
     : "0.00";
 
-  const totalPick = machines.reduce((sum, m) => {
-    const totalMeter =
-      (Number(m.dayMeter) || 0) +
-      (Number(m.nightMeter) || 0);
-
-    return sum + totalMeter * (Number(m.pick) || 0);
-  }, 0);
-
+    const pickValues = machines
+    .map(m => Number(m.pick))
+    .filter(p => !isNaN(p) && p > 0);
+  
   const weightedAvgPick =
-    totalProdMeter > 0
-      ? (totalPick / totalProdMeter).toFixed(2)
+    pickValues.length
+      ? (
+          pickValues.reduce((sum, p) => sum + p, 0) /
+          pickValues.length
+        ).toFixed(2)
       : "0.00";
 
   const avgTotalRPM = (() => {
@@ -245,15 +244,13 @@ const Production = () => {
     // DAY SHIFT
     const dayOperators = [
       ...new Set(
-        machines
-          .map(m => m.dayOperator)
-          .filter(Boolean)
+        machines.map(m => m.dayOperator?.trim() || "Unknown Operator")
       )
     ];
 
     dayOperators.forEach((operatorName) => {
       const machineBlock = machines.filter(
-        m => m.dayOperator === operatorName
+        m => (m.dayOperator?.trim() || "Unknown Operator") === operatorName
       );
 
       entries.push({
@@ -302,15 +299,13 @@ const Production = () => {
     // NIGHT SHIFT
     const nightOperators = [
       ...new Set(
-        machines
-          .map(m => m.nightOperator)
-          .filter(Boolean)
+        machines.map(m => m.nightOperator?.trim() || "Unknown Operator")
       )
     ];
 
     nightOperators.forEach((operatorName) => {
       const machineBlock = machines.filter(
-        m => m.nightOperator === operatorName
+        m => (m.nightOperator?.trim() || "Unknown Operator") === operatorName
       );
 
       entries.push({
