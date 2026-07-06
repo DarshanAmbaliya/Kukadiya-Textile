@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 
 const Production = () => {
@@ -51,6 +51,7 @@ const Production = () => {
   });
 
   const [productionData, setProductionData] = useState({});
+  const inputRefs = useRef([]);
 
   // Fetch fabric quality data
   useEffect(() => {
@@ -166,16 +167,16 @@ const Production = () => {
     ? (nightEffValues.reduce((a, b) => a + b, 0) / nightEffValues.length).toFixed(2)
     : "0.00";
 
-    const pickValues = machines
+  const pickValues = machines
     .map(m => Number(m.pick))
     .filter(p => !isNaN(p) && p > 0);
-  
+
   const weightedAvgPick =
     pickValues.length
       ? (
-          pickValues.reduce((sum, p) => sum + p, 0) /
-          pickValues.length
-        ).toFixed(2)
+        pickValues.reduce((sum, p) => sum + p, 0) /
+        pickValues.length
+      ).toFixed(2)
       : "0.00";
 
   const avgTotalRPM = (() => {
@@ -623,6 +624,21 @@ const Production = () => {
     setSelectedYarns(selectedYarns.filter((_, i) => i !== index));
   };
 
+  const handleEnterKey = (e, row, col) => {
+    if (e.key !== "Enter") return;
+
+    e.preventDefault();
+
+    const nextRow = row + 1;
+
+    if (
+      inputRefs.current[nextRow] &&
+      inputRefs.current[nextRow][col]
+    ) {
+      inputRefs.current[nextRow][col].focus();
+    }
+  };
+
   return (
     <section className="Production-table" style={{ padding: "20px" }}>
       <div className="container">
@@ -677,6 +693,11 @@ const Production = () => {
                     <select
                       value={m.quality}
                       onChange={(e) => handleInputChange(index, "quality", e.target.value)}
+                      ref={(el) => {
+                        if (!inputRefs.current[index]) inputRefs.current[index] = [];
+                        inputRefs.current[index][0] = el;
+                      }}
+                      onKeyDown={(e) => handleEnterKey(e, index, 0)}
                     >
                       <option value="">Select</option>
                       {fabricQuality.map((f) => (
@@ -689,6 +710,11 @@ const Production = () => {
                       value={m.reed}
                       onChange={(e) => handleInputChange(index, "reed", e.target.value)}
                       style={{ width: "30px" }}
+                      ref={(el) => {
+                        if (!inputRefs.current[index]) inputRefs.current[index] = [];
+                        inputRefs.current[index][1] = el;
+                      }}
+                      onKeyDown={(e) => handleEnterKey(e, index, 1)}
                     />
                   </td>
                   <td>
@@ -696,6 +722,11 @@ const Production = () => {
                       value={m.rpm}
                       onChange={(e) => handleInputChange(index, "rpm", e.target.value)}
                       style={{ width: "30px" }}
+                      ref={(el) => {
+                        if (!inputRefs.current[index]) inputRefs.current[index] = [];
+                        inputRefs.current[index][2] = el;
+                      }}
+                      onKeyDown={(e) => handleEnterKey(e, index, 2)}
                     />
                   </td>
                   <td>
@@ -704,6 +735,11 @@ const Production = () => {
                       value={m.bimNumber}
                       onChange={(e) => handleInputChange(index, "bimNumber", e.target.value)}
                       style={{ width: "45px" }}
+                      ref={(el) => {
+                        if (!inputRefs.current[index]) inputRefs.current[index] = [];
+                        inputRefs.current[index][3] = el;
+                      }}
+                      onKeyDown={(e) => handleEnterKey(e, index, 3)}
                     />
                   </td>
                   <td>
@@ -712,6 +748,11 @@ const Production = () => {
                       value={m.dayMeter}
                       onChange={(e) => handleInputChange(index, "dayMeter", e.target.value)}
                       style={{ width: "45px" }}
+                      ref={(el) => {
+                        if (!inputRefs.current[index]) inputRefs.current[index] = [];
+                        inputRefs.current[index][4] = el;
+                      }}
+                      onKeyDown={(e) => handleEnterKey(e, index, 4)}
                     />
                   </td>
                   <td>
@@ -720,6 +761,11 @@ const Production = () => {
                       value={m.nightMeter}
                       onChange={(e) => handleInputChange(index, "nightMeter", e.target.value)}
                       style={{ width: "45px" }}
+                      ref={(el) => {
+                        if (!inputRefs.current[index]) inputRefs.current[index] = [];
+                        inputRefs.current[index][5] = el;
+                      }}
+                      onKeyDown={(e) => handleEnterKey(e, index, 5)}
                     />
                   </td>
                   <td style={{
@@ -736,6 +782,11 @@ const Production = () => {
                         color: isLowBim(m.bimBalance) ? "white" : "inherit",
                         fontWeight: isLowBim(m.bimBalance) ? "bold" : "normal"
                       }}
+                      ref={(el) => {
+                        if (!inputRefs.current[index]) inputRefs.current[index] = [];
+                        inputRefs.current[index][6] = el;
+                      }}
+                      onKeyDown={(e) => handleEnterKey(e, index, 6)}
                     />
                   </td>
                   <td>
@@ -744,6 +795,11 @@ const Production = () => {
                       value={m.dayEff}
                       onChange={(e) => handleInputChange(index, "dayEff", e.target.value)}
                       style={{ width: "35px" }}
+                      ref={(el) => {
+                        if (!inputRefs.current[index]) inputRefs.current[index] = [];
+                        inputRefs.current[index][7] = el;
+                      }}
+                      onKeyDown={(e) => handleEnterKey(e, index, 7)}
                     />
                   </td>
                   <td>
@@ -752,6 +808,11 @@ const Production = () => {
                       value={m.nightEff}
                       onChange={(e) => handleInputChange(index, "nightEff", e.target.value)}
                       style={{ width: "35px" }}
+                      ref={(el) => {
+                        if (!inputRefs.current[index]) inputRefs.current[index] = [];
+                        inputRefs.current[index][8] = el;
+                      }}
+                      onKeyDown={(e) => handleEnterKey(e, index, 8)}
                     />
                   </td>
 
@@ -816,6 +877,11 @@ const Production = () => {
                       onChange={(e) =>
                         handleInputChange(index, "dayOperator", e.target.value)
                       }
+                      ref={(el) => {
+                        if (!inputRefs.current[index]) inputRefs.current[index] = [];
+                        inputRefs.current[index][9] = el;
+                      }}
+                      onKeyDown={(e) => handleEnterKey(e, index, 9)}
                     >
                       <option value="">Select Operator</option>
 
@@ -836,6 +902,11 @@ const Production = () => {
                       onChange={(e) =>
                         handleInputChange(index, "nightOperator", e.target.value)
                       }
+                      ref={(el) => {
+                        if (!inputRefs.current[index]) inputRefs.current[index] = [];
+                        inputRefs.current[index][10] = el;
+                      }}
+                      onKeyDown={(e) => handleEnterKey(e, index, 10)}
                     >
                       <option value="">Select Operator</option>
 
@@ -861,6 +932,11 @@ const Production = () => {
                             : "inherit",
                       fontWeight: 'bold'
                     }}
+                    ref={(el) => {
+                      if (!inputRefs.current[index]) inputRefs.current[index] = [];
+                      inputRefs.current[index][11] = el;
+                    }}
+                    onKeyDown={(e) => handleEnterKey(e, index, 11)}
                   >
                     {formatLostMeter(dayLost)}
                   </td>
@@ -876,6 +952,11 @@ const Production = () => {
                             : "inherit",
                       fontWeight: 'bold'
                     }}
+                    ref={(el) => {
+                      if (!inputRefs.current[index]) inputRefs.current[index] = [];
+                      inputRefs.current[index][12] = el;
+                    }}
+                    onKeyDown={(e) => handleEnterKey(e, index, 12)}
                   >
                     {formatLostMeter(nightLost)}
                   </td>
@@ -886,6 +967,11 @@ const Production = () => {
                       value={m.pick}
                       onChange={(e) => handleInputChange(index, "pick", e.target.value)}
                       style={{ width: "40px" }}
+                      ref={(el) => {
+                        if (!inputRefs.current[index]) inputRefs.current[index] = [];
+                        inputRefs.current[index][13] = el;
+                      }}
+                      onKeyDown={(e) => handleEnterKey(e, index, 13)}
                     />
                   </td>
                 </tr>
