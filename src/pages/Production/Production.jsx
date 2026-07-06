@@ -1044,7 +1044,7 @@ const Production = () => {
 
                   return day > 0 && night > 0
                     ? ((day + night) / 2).toFixed(2)
-                    : day > 0
+                    : day > 0 
                       ? day.toFixed(2)
                       : night > 0
                         ? night.toFixed(2)
